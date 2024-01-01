@@ -1,0 +1,10 @@
+{
+  "name": "twelvetrap-Editor",
+  "references": [
+    "twelvetrap"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": []
+}
