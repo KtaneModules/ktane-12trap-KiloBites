@@ -7,9 +7,12 @@ using KModkit;
 using static UnityEngine.Random;
 using static UnityEngine.Debug;
 
-public class TwelvetrapScript : MonoBehaviour {
+public class TwelvetrapScript : MonoBehaviour
+{
+    static int moduleIdCounter = 1;
+    int moduleId;
 
-	public KMBombInfo Bomb;
+    public KMBombInfo Bomb;
 	public KMAudio Audio;
 	public KMBombModule Module;
     public KMSelectable[] LEDSelectables;
@@ -19,12 +22,14 @@ public class TwelvetrapScript : MonoBehaviour {
     public MeshRenderer[] LEDRends;
     public SpriteRenderer StarRend;
     public SpriteRenderer LowerGlow;
+	public Material[] LEDMats;
+	public SpriteRenderer[] Glows;
 
-    static int moduleIdCounter = 1;
-	int moduleId;
+	private Color[] coloursForRends = new Color[] { Color.red, new Color(1, 1, 0, 1), Color.green, Color.cyan, Color.blue, Color.magenta, Color.white }; //Why the hell is Color.yellow not 1, 1, 0. It's ugly.
+	private List<int> colours = new List<int>();
 	private bool cannotPress = true, moduleSolved;
 
-	private static readonly string[] colorNames = { "Black", "Red", "Green", "Blue", "Yellow", "Magenta", "Cyan", "White" };
+	private static readonly string[] colorNames = { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" };
 
 	private static readonly HighLevelSec[] secSets =
 	{
@@ -54,6 +59,11 @@ public class TwelvetrapScript : MonoBehaviour {
 		new HighLevelSec("T.O.A.S.T.", "U.S.A.", "Anthropology", "ANNOUNCER", "GRB")
 	};
 
+	private Sprite GetEmblemSprite(string name)
+	{
+		return EmblemSprites.Where(x => x.name == name).First();
+	}
+
 	void Awake()
     {
 		moduleId = moduleIdCounter++;
@@ -64,10 +74,17 @@ public class TwelvetrapScript : MonoBehaviour {
 		HaloTemplate.gameObject.SetActive(false);
 		StarRend.transform.localScale = Vector3.zero;
 		Emblem.transform.parent.localScale = Vector3.zero;
-        StartCoroutine(EmblemAnim());
-		LowerGlow.color = Color.clear;
+        StartCoroutine(EmblemJitter());
+        StartCoroutine(EmblemScatter());
 
-        Module.OnActivate += delegate { StartCoroutine(IntroAnim()); };
+		var originalAlpha = LowerGlow.color.a;
+        Module.OnActivate += delegate { StartCoroutine(IntroAnim(originalAlpha)); };
+        LowerGlow.color = Color.clear;
+
+		for (int i = 0; i < 12; i++)
+			UnlightLED(i);
+
+		Calculate();
     }
 
 	
@@ -75,6 +92,12 @@ public class TwelvetrapScript : MonoBehaviour {
     {
 		
     }
+
+	void Calculate()
+	{
+		for (int i = 0; i < 12; i++)
+			colours.Add(Range(0, 7));
+	}
 
 	void LEDPress(KMSelectable led)
 	{
@@ -89,10 +112,21 @@ public class TwelvetrapScript : MonoBehaviour {
 
     }
 
-	private IEnumerator IntroAnim(float openingPause = 0.5f, float activateInterval = 0.1f, float hologramSpreadDur = 0.05f)
+	void LightLED(int pos, Color colour)
+	{
+        LEDRends[pos].material = LEDMats[1];
+        LEDRends[pos].material.color = Glows[pos].color = colour;
+    }
+
+	void UnlightLED(int pos)
+	{
+        LEDRends[pos].material = LEDMats[0];
+        LEDRends[pos].material.color = Glows[pos].color = Color.clear;
+    }
+
+	private IEnumerator IntroAnim(float lowerGlowOriginal, float openingPause = 0.5f, float activateInterval = 0.35f, float hologramSpreadDur = 0.05f)
 	{
 		Audio.PlaySoundAtTransform("boot", transform);
-		var lowerGlowOriginal = LowerGlow.color.a;
 		float timer = 0;
 		while (timer < openingPause)
 		{
@@ -107,19 +141,30 @@ public class TwelvetrapScript : MonoBehaviour {
 		LowerGlow.color = new Color(1, 1, 1, lowerGlowOriginal);
         StartCoroutine(SpawnHalos());
 
-		foreach (var but in LEDSelectables)
+		for (int i = 0; i < 12; i++)
 		{
-            Audio.PlaySoundAtTransform("colour spawn", but.transform);
-			timer = 0;
-			while (timer < activateInterval)
+            Audio.PlaySoundAtTransform("colour spawn", LEDSelectables[i].transform);
+            LightLED(i, Color.white);
+            timer = 0;
+			while (timer < activateInterval / (i + 1))
 			{
 				yield return null;
 				timer += Time.deltaTime;
 			}
         }
-
+		for (int i = 0; i < 12; i++)
+			LightLED(i, coloursForRends[colours[i]]);
         Audio.PlaySoundAtTransform("loaded", transform);
-		timer = 0;
+
+        timer = 0;
+        while (timer < 0.5f)
+        {
+            yield return null;
+            timer += Time.deltaTime;
+        }
+        Audio.PlaySoundAtTransform("hologram open", transform);
+
+        timer = 0;
 		while (timer < hologramSpreadDur)
 		{
 			yield return null;
@@ -145,13 +190,39 @@ public class TwelvetrapScript : MonoBehaviour {
         cannotPress = false;
     }
 
-    private IEnumerator EmblemAnim(float bound = 0.0001f)
+    private IEnumerator EmblemJitter(float bound = 0.0001f)
     {
         while (true)
         {
             yield return null;
             Emblem.transform.localPosition = new Vector3(Range(-bound, bound), Emblem.transform.localPosition.y, Range(-bound, bound));
             Emblem.color = new Color(1, 1, 1, Range(0.68f, 0.78f));
+        }
+    }
+
+    private IEnumerator EmblemScatter(float lowerBound = 2f, float upperBound = 5f, float interval = 0.025f)
+    {
+		Emblem.sprite = GetEmblemSprite("emblem");
+        while (true)
+        {
+			float timer = 0;
+			while (timer < Range(lowerBound, upperBound))
+			{
+				yield return null;
+				timer += Time.deltaTime;
+			}
+			var dir = Range(0, 4);
+			for (int i = 0; i < 3; i++)
+			{
+				Emblem.sprite = GetEmblemSprite("emblem d" + dir.ToString() + i);
+                timer = 0;
+                while (timer < interval)
+                {
+                    yield return null;
+                    timer += Time.deltaTime;
+                }
+            }
+            Emblem.sprite = GetEmblemSprite("emblem");
         }
     }
 
@@ -198,7 +269,7 @@ public class TwelvetrapScript : MonoBehaviour {
     private readonly string TwitchHelpMessage = @"!{0} something";
 #pragma warning restore 414
 
-	IEnumerator ProcessTwitchCommand (string command)
+	IEnumerator ProcessTwitchCommand(string command)
     {
 		string[] split = command.ToUpperInvariant().Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
 		yield return null;
