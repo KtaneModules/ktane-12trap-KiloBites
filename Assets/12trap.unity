@@ -365,88 +365,9 @@ Prefab:
       propertyPath: m_RootOrder
       value: 2
       objectReference: {fileID: 0}
-    - target: {fileID: 1064328979954102, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
+    - target: {fileID: 1216518402681970, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
       propertyPath: m_IsActive
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 212416645013258658, guid: d17dbae31d265bb48be96785547d7c84,
-        type: 2}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 21300000, guid: be0ec12f900f7c549b5e38a8085c267a,
-        type: 3}
-    - target: {fileID: 102043757521268984, guid: d17dbae31d265bb48be96785547d7c84,
-        type: 2}
-      propertyPath: m_Color.rgba
-      value: 3372220415
-      objectReference: {fileID: 0}
-    - target: {fileID: 102221373757586040, guid: d17dbae31d265bb48be96785547d7c84,
-        type: 2}
-      propertyPath: m_Color.rgba
-      value: 3372220415
-      objectReference: {fileID: 0}
-    - target: {fileID: 212416645013258658, guid: d17dbae31d265bb48be96785547d7c84,
-        type: 2}
-      propertyPath: m_Color.a
-      value: 0.78431374
-      objectReference: {fileID: 0}
-    - target: {fileID: 4510024345312628, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
-      propertyPath: m_LocalScale.x
-      value: 0.925
-      objectReference: {fileID: 0}
-    - target: {fileID: 4510024345312628, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
-      propertyPath: m_LocalScale.y
-      value: 0.925
-      objectReference: {fileID: 0}
-    - target: {fileID: 4510024345312628, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
-      propertyPath: m_LocalScale.z
-      value: 0.925
-      objectReference: {fileID: 0}
-    - target: {fileID: 102043757521268984, guid: d17dbae31d265bb48be96785547d7c84,
-        type: 2}
-      propertyPath: m_Text
-      value: "John \u201CScope\u201D"
-      objectReference: {fileID: 0}
-    - target: {fileID: 102221373757586040, guid: d17dbae31d265bb48be96785547d7c84,
-        type: 2}
-      propertyPath: m_Text
-      value: Business Adm.
-      objectReference: {fileID: 0}
-    - target: {fileID: 102221373757586040, guid: d17dbae31d265bb48be96785547d7c84,
-        type: 2}
-      propertyPath: m_CharacterSize
-      value: 0.007
-      objectReference: {fileID: 0}
-    - target: {fileID: 102043757521268984, guid: d17dbae31d265bb48be96785547d7c84,
-        type: 2}
-      propertyPath: m_CharacterSize
-      value: 0.007
-      objectReference: {fileID: 0}
-    - target: {fileID: 4368996960377044, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
-      propertyPath: m_LocalScale.x
-      value: 0.006
-      objectReference: {fileID: 0}
-    - target: {fileID: 4368996960377044, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
-      propertyPath: m_LocalScale.y
-      value: 0.006
-      objectReference: {fileID: 0}
-    - target: {fileID: 4368996960377044, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
-      propertyPath: m_LocalScale.z
-      value: 0.006
-      objectReference: {fileID: 0}
-    - target: {fileID: 212416645013258658, guid: d17dbae31d265bb48be96785547d7c84,
-        type: 2}
-      propertyPath: m_Size.y
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 212416645013258658, guid: d17dbae31d265bb48be96785547d7c84,
-        type: 2}
-      propertyPath: m_WasSpriteAssigned
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1176126603838624, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
