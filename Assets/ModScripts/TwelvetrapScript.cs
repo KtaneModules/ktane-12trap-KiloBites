@@ -6,6 +6,7 @@ using UnityEngine;
 using KModkit;
 using static UnityEngine.Random;
 using static UnityEngine.Debug;
+using System.Xml.Linq;
 
 public class TwelvetrapScript : MonoBehaviour
 {
@@ -33,31 +34,55 @@ public class TwelvetrapScript : MonoBehaviour
 
 	private static readonly HighLevelSec[] secSets =
 	{
-		new HighLevelSec("Arbott", "Korea", "Fine Art", "DISPATCHED", "CBC"),
-		new HighLevelSec("Archer", "China", "Economics", "KILLED IN ACT.", "WWY"),
-		new HighLevelSec("Caleb", "U.S.A.", "Education", "CANDIDATE", "GYR"),
-		new HighLevelSec("Connie", "Greece", "Astronomy", "CANDIDATE", "YMR"),
-		new HighLevelSec("Daniel", "Armenia", "Medicine", "CANDIDATE", "PWY"),
-		new HighLevelSec("Dekashi", "Japan", "Music", "AVAILABLE", "BMB"),
-		new HighLevelSec("Douma", "Armenia", "Chemistry", "UNWORTHY", "YBB"),
-		new HighLevelSec("Eriksson", "Greece", "Architecture", "DISPATCHED", "CYG"),
-		new HighLevelSec("Fangi", "Thailand", "Marketing", "AVAILABLE", "YYR"),
-		new HighLevelSec("Goodman", "U.K.", "Nat. Sciences", "CANDIDATE", "MRR"),
-		new HighLevelSec("Jackson", "U.K.", "Media & Comm.", "SUSPECT", "YRC"),
-		new HighLevelSec("John \"Scope\"", "Korea", "Business Mng.", "UNWORTHY", "GGM"),
-		new HighLevelSec("Jonathan", "U.S.A.", "Statistics", "AVAILABLE", "BRY"),
-		new HighLevelSec("King", "Korea", "Soc. Sciences", "CANDIDATE", "MMC"),
-		new HighLevelSec("Kusane", "Thailand", "Thai", "UNWORTHY", "MGW"),
-		new HighLevelSec("Manny", "China", "Int. Relations", "CANDIDATE", "WGW"),
-		new HighLevelSec("Nicholas", "U.K.", "Law", "SUSPECT", "BRW"),
-		new HighLevelSec("Paartas", "Armenia", "Engineering", "CANDIDATE", "YBM"),
-		new HighLevelSec("Jamie", "Greece", "Mathematics", "KILLED IN ACT.", "RRR"),
-		new HighLevelSec("Raymond", "China", "Business Adm.", "DISPATCHED", "RYW"),
-		new HighLevelSec("Shaun", "Japan", "Art & Design", "CANDIDATE", "CWM"),
-		new HighLevelSec("Vincent", "Japan", "Life Sciences", "CANDIDATE", "BBG"),
-		new HighLevelSec("William", "Thailand", "Management", "DEAD", "MYB"),
-		new HighLevelSec("T.O.A.S.T.", "U.S.A.", "Anthropology", "ANNOUNCER", "GRB")
+		new HighLevelSec(new string[] { "Arbott", "Korea", "Fine Art", "DISPATCHED", "CBC" }),
+		new HighLevelSec(new string[] { "Archer", "China", "Economics", "KILLED IN ACT.", "WWY" }),
+		new HighLevelSec(new string[] { "Caleb", "U.S.A.", "Education", "CANDIDATE", "GYR" }),
+		new HighLevelSec(new string[] { "Connie", "Greece", "Astronomy", "CANDIDATE", "YMR" }),
+		new HighLevelSec(new string[] { "Daniel", "Armenia", "Medicine", "CANDIDATE", "PWY" }),
+		new HighLevelSec(new string[] { "Dekashi", "Japan", "Music", "AVAILABLE", "BMB" }),
+		new HighLevelSec(new string[] { "Douma", "Armenia", "Chemistry", "UNWORTHY", "YBB" }),
+		new HighLevelSec(new string[] { "Eriksson", "Greece", "Architecture", "DISPATCHED", "CYG" }),
+		new HighLevelSec(new string[] { "Fangi", "Thailand", "Marketing", "AVAILABLE", "YYR" }),
+		new HighLevelSec(new string[] { "Goodman", "U.K.", "Nat. Sciences", "CANDIDATE", "MRR" }),
+		new HighLevelSec(new string[] { "Jackson", "U.K.", "Media & Comm.", "SUSPECT", "YRC" }),
+		new HighLevelSec(new string[] { "John \"Scope\"", "Korea", "Business Mng.", "UNWORTHY", "GGM" }),
+		new HighLevelSec(new string[] { "Jonathan", "U.S.A.", "Statistics", "AVAILABLE", "BRY" }),
+		new HighLevelSec(new string[] { "King", "Korea", "Soc. Sciences", "CANDIDATE", "MMC" }),
+		new HighLevelSec(new string[] { "Kusane", "Thailand", "Thai", "UNWORTHY", "MGW" }),
+		new HighLevelSec(new string[] { "Manny", "China", "Int. Relations", "CANDIDATE", "WGW" }),
+		new HighLevelSec(new string[] { "Nicholas", "U.K.", "Law", "SUSPECT", "BRW" }),
+		new HighLevelSec(new string[] { "Paartas", "Armenia", "Engineering", "CANDIDATE", "YBM" }),
+		new HighLevelSec(new string[] { "Jamie", "Greece", "Mathematics", "KILLED IN ACT.", "RRR" }),
+		new HighLevelSec(new string[] { "Raymond", "China", "Business Adm.", "DISPATCHED", "RYW" }),
+		new HighLevelSec(new string[] { "Shaun", "Japan", "Art & Design", "CANDIDATE", "CWM" }),
+		new HighLevelSec(new string[] { "Vincent", "Japan", "Life Sciences", "CANDIDATE", "BBG" }),
+		new HighLevelSec(new string[] { "William", "Thailand", "Management", "DEAD", "MYB" }),
+		new HighLevelSec(new string[] { "T.O.A.S.T.", "U.S.A.", "Anthropology", "ANNOUNCER", "GRB" })
 	};
+
+	private HighLevelSec SelectedSec()
+	{
+		var selectedValues = new int[2];
+
+		var rnd = Range(0, secSets.Length);
+
+		selectedValues[0] = Range(0, 4);
+		selectedValues[1] = Enumerable.Range(0, 4).Where(x => x != selectedValues[0]).PickRandom();
+
+		var randomSelectValue = Range(0, 2) == 0;
+
+		var selectedSecSet = secSets[rnd];
+
+		var selected = new string[5];
+
+		for (int i = 0; i < 5; i++)
+			selected[i] = selectedValues.Contains(i) || i == 4 ? selectedSecSet.SecurityInformation[i] : 
+				Enumerable.Range(0, secSets.Length).Where(x => x != rnd).Select(x => secSets[x]).Where(x => x.SecurityInformation[i] != selectedSecSet.SecurityInformation[selectedValues[0]] && x.SecurityInformation[i] != selectedSecSet.SecurityInformation[selectedValues[1]]).PickRandom().SecurityInformation[i];
+
+		return randomSelectValue ? secSets.PickRandom() : new HighLevelSec(selected);
+	}
+
+	private HighLevelSecRules secRuleset;
 
 	private Sprite GetEmblemSprite(string name)
 	{
@@ -84,13 +109,15 @@ public class TwelvetrapScript : MonoBehaviour
 		for (int i = 0; i < 12; i++)
 			UnlightLED(i);
 
-		Calculate();
+		
     }
 
 	
 	void Start()
     {
-		
+		secRuleset = new HighLevelSecRules(secSets, SelectedSec());
+
+        Calculate();
     }
 
 	void Calculate()
@@ -101,7 +128,7 @@ public class TwelvetrapScript : MonoBehaviour
 
 	void LEDPress(KMSelectable led)
 	{
-		if (moduleSolved)
+		if (moduleSolved || cannotPress)
 			return;
 
 		var ix = Array.IndexOf(LEDSelectables, led);

@@ -1,17 +1,35 @@
-﻿public class HighLevelSec
-{
-    public string Name { get; private set; }
-    public string Nationality { get; private set; }
-    public string FieldOfStudy { get; private set; }
-    public string Status { get; private set; }
-    public string ColorSet { get; private set; }
+﻿using System.Linq;
 
-    public HighLevelSec(string name, string nationality, string fieldOfStudy, string status, string colorSet)
+public class HighLevelSec
+{
+    public string[] SecurityInformation { get; private set; }
+
+    public HighLevelSec(string[] securityInformation)
     {
-        Name = name;
-        Nationality = nationality;
-        FieldOfStudy = fieldOfStudy;
-        Status = status;
-        ColorSet = colorSet;
+        SecurityInformation = securityInformation;
+    }
+}
+
+public class HighLevelSecRules
+{
+    private readonly HighLevelSec[] Database;
+    private readonly HighLevelSec SelectedData;
+
+    public HighLevelSecRules(HighLevelSec[] database, HighLevelSec selectedData)
+    {
+        Database = database;
+        SelectedData = selectedData;
+    }
+
+    public bool CheckRules()
+    {
+        var selectedSecInfo = SelectedData.SecurityInformation.Take(4).ToArray();
+        var data = Database.Select(x => x.SecurityInformation.Take(4).ToArray()).ToArray();
+
+        for (int i = 0; i < data.Length; i++)
+            if (data[i].SequenceEqual(selectedSecInfo))
+                return true;
+
+        return false;
     }
 }
