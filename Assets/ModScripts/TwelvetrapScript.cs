@@ -12,12 +12,17 @@ public class TwelvetrapScript : MonoBehaviour {
 	public KMBombInfo Bomb;
 	public KMAudio Audio;
 	public KMBombModule Module;
+    public KMSelectable[] LEDSelectables;
+    public SpriteRenderer Emblem;
+    public Sprite[] EmblemSprites;
+    public SpriteRenderer HaloTemplate;
+    public MeshRenderer[] LEDRends;
+    public SpriteRenderer StarRend;
+    public SpriteRenderer LowerGlow;
 
-	public KMSelectable[] ledButtons;
-
-	static int moduleIdCounter = 1;
+    static int moduleIdCounter = 1;
 	int moduleId;
-	private bool moduleSolved;
+	private bool cannotPress = true, moduleSolved;
 
 	private static readonly string[] colorNames = { "Black", "Red", "Green", "Blue", "Yellow", "Magenta", "Cyan", "White" };
 
@@ -51,12 +56,18 @@ public class TwelvetrapScript : MonoBehaviour {
 
 	void Awake()
     {
-
 		moduleId = moduleIdCounter++;
 
-		foreach (KMSelectable led in ledButtons)
+		foreach (KMSelectable led in LEDSelectables)
 			led.OnInteract += delegate () { LEDPress(led); return false; };
 
+		HaloTemplate.gameObject.SetActive(false);
+		StarRend.transform.localScale = Vector3.zero;
+		Emblem.transform.parent.localScale = Vector3.zero;
+        StartCoroutine(EmblemAnim());
+		LowerGlow.color = Color.clear;
+
+        Module.OnActivate += delegate { StartCoroutine(IntroAnim()); };
     }
 
 	
@@ -70,20 +81,121 @@ public class TwelvetrapScript : MonoBehaviour {
 		if (moduleSolved)
 			return;
 
-		var ix = Array.IndexOf(ledButtons, led);
+		var ix = Array.IndexOf(LEDSelectables, led);
 	}
-	
 	
 	void Update()
     {
 
     }
 
-	// Twitch Plays
+	private IEnumerator IntroAnim(float openingPause = 0.5f, float activateInterval = 0.1f, float hologramSpreadDur = 0.05f)
+	{
+		Audio.PlaySoundAtTransform("boot", transform);
+		var lowerGlowOriginal = LowerGlow.color.a;
+		float timer = 0;
+		while (timer < openingPause)
+		{
+			yield return null;
+			timer += Time.deltaTime;
+			StarRend.transform.localEulerAngles = new Vector3(StarRend.transform.localEulerAngles.x, Easing.OutExpo(timer, 0, 180, openingPause), StarRend.transform.localEulerAngles.z);
+			StarRend.color = new Color(1, 1, 1, Easing.InSine(timer, 1, 0, openingPause));
+			StarRend.transform.localScale = Vector3.one * Mathf.Lerp(0.005f, 0.0035f, timer / openingPause);
+			LowerGlow.color = new Color(1, 1, 1, Easing.InSine(timer, 0, lowerGlowOriginal, openingPause));
+		}
+		StarRend.gameObject.SetActive(false);
+		LowerGlow.color = new Color(1, 1, 1, lowerGlowOriginal);
+        StartCoroutine(SpawnHalos());
+
+		foreach (var but in LEDSelectables)
+		{
+            Audio.PlaySoundAtTransform("colour spawn", but.transform);
+			timer = 0;
+			while (timer < activateInterval)
+			{
+				yield return null;
+				timer += Time.deltaTime;
+			}
+        }
+
+        Audio.PlaySoundAtTransform("loaded", transform);
+		timer = 0;
+		while (timer < hologramSpreadDur)
+		{
+			yield return null;
+			timer += Time.deltaTime;
+            Emblem.transform.parent.localScale = new Vector3(Mathf.Lerp(0, 1, timer / hologramSpreadDur), 1, 0.05f);
+        }
+        Emblem.transform.parent.localScale = new Vector3(1, 1, 0.05f);
+        timer = 0;
+        while (timer < 0.2f - hologramSpreadDur)
+        {
+            yield return null;
+            timer += Time.deltaTime;
+        }
+        timer = 0;
+        while (timer < hologramSpreadDur)
+        {
+            yield return null;
+            timer += Time.deltaTime;
+            Emblem.transform.parent.localScale = new Vector3(1, 1, Mathf.Lerp(0.05f, 1, timer / hologramSpreadDur));
+        }
+        Emblem.transform.parent.localScale = Vector3.one;
+
+        cannotPress = false;
+    }
+
+    private IEnumerator EmblemAnim(float bound = 0.0001f)
+    {
+        while (true)
+        {
+            yield return null;
+            Emblem.transform.localPosition = new Vector3(Range(-bound, bound), Emblem.transform.localPosition.y, Range(-bound, bound));
+            Emblem.color = new Color(1, 1, 1, Range(0.68f, 0.78f));
+        }
+    }
+
+	private IEnumerator SpawnHalos(float spawnRate = 2/3f)
+	{
+		while (true)
+		{
+			StartCoroutine(FollowHalo());
+			float timer = 0;
+			while (timer < spawnRate)
+			{
+				yield return null;
+				timer += Time.deltaTime;
+			}
+		}
+	}
+
+    private IEnumerator FollowHalo(float lifeLength = 2f, float maxAlpha = 0.25f)
+    {
+		var halo = Instantiate(HaloTemplate, HaloTemplate.transform.parent);
+		halo.transform.localPosition = HaloTemplate.transform.localPosition;
+		halo.transform.localScale = Vector3.zero;
+		halo.gameObject.SetActive(true);
+
+		var posFrom = halo.transform.localPosition.y;
+		var posTo = Emblem.transform.localPosition.y;
+
+		float timer = 0;
+		while (timer < lifeLength)
+		{
+			yield return null;
+			timer += Time.deltaTime;
+			halo.transform.localPosition = new Vector3(halo.transform.localPosition.x, Mathf.Lerp(posFrom, posTo, timer / lifeLength), halo.transform.localPosition.z);
+			halo.transform.localScale = Vector3.one * Mathf.Lerp(0, HaloTemplate.transform.localScale.x, timer / lifeLength);
+			halo.color = new Color(1, 1, 1, Mathf.PingPong(Mathf.Lerp(0, 2, timer / lifeLength), 1) * maxAlpha);
+        }
+		Destroy(halo.gameObject);
+    }
+
+    // Twitch Plays
 
 
 #pragma warning disable 414
-	private readonly string TwitchHelpMessage = @"!{0} something";
+    private readonly string TwitchHelpMessage = @"!{0} something";
 #pragma warning restore 414
 
 	IEnumerator ProcessTwitchCommand (string command)
@@ -99,8 +211,3 @@ public class TwelvetrapScript : MonoBehaviour {
 
 
 }
-
-
-
-
-
