@@ -6,7 +6,6 @@ using UnityEngine;
 using KModkit;
 using static UnityEngine.Random;
 using static UnityEngine.Debug;
-using System.Xml.Linq;
 
 public class TwelvetrapScript : MonoBehaviour
 {
@@ -84,10 +83,7 @@ public class TwelvetrapScript : MonoBehaviour
 
 	private HighLevelSecRules secRuleset;
 
-	private Sprite GetEmblemSprite(string name)
-	{
-		return EmblemSprites.Where(x => x.name == name).First();
-	}
+	private Sprite GetEmblemSprite(string name) => EmblemSprites.Where(x => x.name == name).First();
 
 	void Awake()
     {
