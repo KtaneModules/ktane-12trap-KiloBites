@@ -13,10 +13,10 @@ public class WorldBreaking
         switch (bomb.GetBatteryCount())
         {
             case 0:
-                grid = "xxxxx.xxxx.xxxxx.xxxxxxxxxx..xxxxxxxxxx.xxx.xxxxxx";
+                grid = "xxxxx.xxxx.xxxxx.xxxxxxxxxx..xxxxxxxxxx.xxx.xxxxx";
                 break;
             case 1:
-                grid = "";
+                grid = "xxx.xxxxx.x.xxxxxxxxxxxx.xxxxxxxxxxxx.x.xxxxx.xxx";
                 break;
             case 2:
                 break;
