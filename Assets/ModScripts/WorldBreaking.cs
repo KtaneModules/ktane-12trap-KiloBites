@@ -19,12 +19,16 @@ public class WorldBreaking
                 grid = "xxx.xxxxx.x.xxxxxxxxxxxx.xxxxxxxxxxxx.x.xxxxx.xxx";
                 break;
             case 2:
+                grid = "xxxxxxxx.x.xxxxxxx.xxxxx.xxxxx.xxxxxxx.x.xxxxxxxx";
                 break;
             case 3:
+                grid = ".x.x.x.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.x.x.x";
                 break;
             case 4:
+                grid = "x.xxxxxxxxxxxxxxx.xxxxx...xxxxx.xxxxxxxxxxxxxxx.x";
                 break;
             default:
+                grid = "xxxxxxxxxx.xxxxxxxxxx..x.x..xxxxxxxxxx.xxxxxxxxxx";
                 break;
         }
 
