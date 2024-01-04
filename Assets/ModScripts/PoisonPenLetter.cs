@@ -47,9 +47,13 @@ public class PoisonPenLetter
         var colors = new char[3];
 
         for (int i = 0; i < 3; i++)
-        {
-
-        }
+            colors[i] = "AHOV".Contains(letters[i]) ? 'R' :
+                "FMTZ".Contains(letters[i]) ? 'Y' :
+                "GNU".Contains(letters[i]) ? 'W' :
+                "DKRY".Contains(letters[i]) ? 'M' :
+                "CJQX".Contains(letters[i]) ? 'G' :
+                "ELS".Contains(letters[i]) ? 'C' :
+                "WPIB".Contains(letters[i]) ? 'B' : '?';
 
         return colors;
     }

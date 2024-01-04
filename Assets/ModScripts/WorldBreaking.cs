@@ -52,5 +52,7 @@ public class WorldBreaking
 
     private static readonly char[] ColorTable = "RMWBGCYGYRCBWMWBMRYGCMWGYCRBCRBGMYWBCYWRMGYGCMWBR".ToCharArray();
 
+    public static string Coordinate(int pos) => $"{"ABCDEFG"[pos % 7]}{(pos / 7) + 1}";
+
 
 }
