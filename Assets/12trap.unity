@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -364,6 +364,21 @@ Prefab:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowOneSprites.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowTwoSprites.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowThreeSprites.Array.size
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 4182846922419878, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -400,6 +415,87 @@ Prefab:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1064328979954102, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: Arrow
+      value: 
+      objectReference: {fileID: 2103570036}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowOneSprites.Array.data[0]
+      value: 
+      objectReference: {fileID: 21300000, guid: d446309a3d44f824e9d3c0cd318693d6,
+        type: 3}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowOneSprites.Array.data[1]
+      value: 
+      objectReference: {fileID: 21300000, guid: da93125a4ebac3846b5a125853cb4203,
+        type: 3}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowOneSprites.Array.data[2]
+      value: 
+      objectReference: {fileID: 21300000, guid: 097da2cf7125b4d458cae2850e001bdc,
+        type: 3}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowOneSprites.Array.data[3]
+      value: 
+      objectReference: {fileID: 21300000, guid: b27541085d333e14f9c71f7edac1ed4a,
+        type: 3}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowTwoSprites.Array.data[0]
+      value: 
+      objectReference: {fileID: 21300000, guid: 27236862d19c1d946ba33cfcd0622eb4,
+        type: 3}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowTwoSprites.Array.data[1]
+      value: 
+      objectReference: {fileID: 21300000, guid: 483342cd4505efa4da9427b37e0f7bcf,
+        type: 3}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowTwoSprites.Array.data[2]
+      value: 
+      objectReference: {fileID: 21300000, guid: 5fe278568dc33c64584cd00a3fc802af,
+        type: 3}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowTwoSprites.Array.data[3]
+      value: 
+      objectReference: {fileID: 21300000, guid: 88b9b04d1d09e5640b926f961ec4f0e0,
+        type: 3}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowThreeSprites.Array.data[0]
+      value: 
+      objectReference: {fileID: 21300000, guid: eba6f4b78c057014494ca3aa33903ccd,
+        type: 3}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowThreeSprites.Array.data[1]
+      value: 
+      objectReference: {fileID: 21300000, guid: 38b3ceaa188a9684d8c10b534effec8e,
+        type: 3}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowThreeSprites.Array.data[2]
+      value: 
+      objectReference: {fileID: 21300000, guid: 36167b2f3a7fc824c851edc977abb487,
+        type: 3}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: ArrowThreeSprites.Array.data[3]
+      value: 
+      objectReference: {fileID: 21300000, guid: ad0ab5f5c4548604db0fa754f60c9c1c,
+        type: 3}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
   m_IsPrefabParent: 0

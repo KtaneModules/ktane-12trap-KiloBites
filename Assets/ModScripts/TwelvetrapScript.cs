@@ -16,8 +16,8 @@ public class TwelvetrapScript : MonoBehaviour
 	public KMAudio Audio;
 	public KMBombModule Module;
     public KMSelectable[] LEDSelectables;
-    public SpriteRenderer Emblem;
-    public Sprite[] EmblemSprites;
+    public SpriteRenderer Emblem, Arrow;
+    public Sprite[] EmblemSprites, ArrowOneSprites, ArrowTwoSprites, ArrowThreeSprites;
     public SpriteRenderer HaloTemplate;
     public MeshRenderer[] LEDRends;
     public SpriteRenderer StarRend;
@@ -28,6 +28,8 @@ public class TwelvetrapScript : MonoBehaviour
 	private Color[] coloursForRends = new Color[] { Color.red, new Color(1, 1, 0, 1), Color.green, Color.cyan, Color.blue, Color.magenta, Color.white }; //Why the hell is Color.yellow not 1, 1, 0. It's ugly.
 	private List<int> colours = new List<int>();
 	private bool cannotPress = true, moduleSolved;
+
+	private Sprite[][] arrowSprites;
 
 	private static readonly string[] colorNames = { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" };
 
@@ -84,6 +86,7 @@ public class TwelvetrapScript : MonoBehaviour
 	private HighLevelSecRules secRuleset;
 
 	private Sprite GetEmblemSprite(string name) => EmblemSprites.Where(x => x.name == name).First();
+	private Sprite GetArrowSprite(string name, int arr) => arrowSprites[arr].Where(x => x.name == name).First();
 
 	void Awake()
     {
@@ -97,6 +100,8 @@ public class TwelvetrapScript : MonoBehaviour
 		Emblem.transform.parent.localScale = Vector3.zero;
         StartCoroutine(EmblemJitter());
         StartCoroutine(EmblemScatter());
+
+		arrowSprites = new Sprite[][] { ArrowOneSprites, ArrowTwoSprites, ArrowThreeSprites };
 
 		var originalAlpha = LowerGlow.color.a;
         Module.OnActivate += delegate { StartCoroutine(IntroAnim(originalAlpha)); };
@@ -129,11 +134,6 @@ public class TwelvetrapScript : MonoBehaviour
 
 		var ix = Array.IndexOf(LEDSelectables, led);
 	}
-	
-	void Update()
-    {
-
-    }
 
 	void LightLED(int pos, Color colour)
 	{
@@ -223,7 +223,7 @@ public class TwelvetrapScript : MonoBehaviour
         }
     }
 
-    private IEnumerator EmblemScatter(float lowerBound = 2f, float upperBound = 5f, float interval = 0.025f)
+    private IEnumerator EmblemScatter(float lowerBound = 3f, float upperBound = 6f, float interval = 0.05f)
     {
 		Emblem.sprite = GetEmblemSprite("emblem");
         while (true)
@@ -248,6 +248,37 @@ public class TwelvetrapScript : MonoBehaviour
             Emblem.sprite = GetEmblemSprite("emblem");
         }
     }
+
+	private IEnumerator ArrowScatter(int selectedArrow, float lowerBound = 2f, float upperBound = 5f, float interval = 0.025f)
+	{
+		Arrow.sprite = GetArrowSprite($"arrow {selectedArrow}", selectedArrow);
+
+		while (true)
+		{
+			float timer = 0;
+
+			while (timer < Range(lowerBound, upperBound))
+			{
+				yield return null;
+				timer += Time.deltaTime;
+			}
+
+			var dir = Range(0, 4);
+
+			for (int i = 0; i < 3; i++)
+			{
+				Arrow.sprite = GetArrowSprite($"arrow {selectedArrow}d{dir + i}", selectedArrow);
+				timer = 0;
+
+				while (timer < interval)
+				{
+					yield return null;
+					timer += Time.deltaTime;
+				}
+			}
+            Arrow.sprite = GetArrowSprite($"arrow {selectedArrow}", selectedArrow);
+        }
+	}
 
 	private IEnumerator SpawnHalos(float spawnRate = 2/3f)
 	{
