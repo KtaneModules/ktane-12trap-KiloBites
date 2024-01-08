@@ -54,9 +54,45 @@ public class WorldBreaking
         return adj;
     }
 
+    private int?[] CheckDiagonalAdjacent(int pos)
+    {
+        var x = pos / 7;
+        var y = pos % 7;
+
+        int[][] adj =
+        {
+            new int[] { x - 1, y - 1},
+            new int[] { x - 1, y + 1},
+            new int[] { x + 1, y + 1},
+            new int[] { x + 1, y - 1}
+        };
+
+        int?[] actualAdj = new int?[4];
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (adj[i].Any(num => num < 0 || num > 7))
+            {
+                actualAdj[i] = null;
+                continue;
+            }
+
+            actualAdj[i] = adj[i][0] * 7 + adj[i][1];
+        }
+
+        return actualAdj;
+    }
+
     private static readonly char[] ColorTable = "RMWBGCYGYRCBWMWBMRYGCMWGYCRBCRBGMYWBCYWRMGYGCMWBR".ToCharArray();
 
-    public static string Coordinate(int pos) => $"{"ABCDEFG"[pos % 7]}{(pos / 7) + 1}";
+    public bool[] GoCommitExplode(bool[] grid)
+    {
+        var finalGrid = new bool[49];
+
+
+
+        return finalGrid;
+    }
 
 
 }
