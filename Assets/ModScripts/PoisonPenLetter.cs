@@ -40,7 +40,7 @@ public class PoisonPenLetter
 
     private string FilterLetters(string letter, char letterToFilter) => letter.Where(x => x == letterToFilter).Join("");
 
-    private string RankSystem(int number) => number % 10 == 1 ? $"{number}st" : number % 10 == 2 ? $"{number}nd" : number % 10 == 3 ? $"{number}rd" : $"{number}th";
+    private string RankSystem(int number) => number % 10 == 1 && number != 11 ? $"{number}st" : number % 10 == 2 && number != 12 ? $"{number}nd" : number % 10 == 3 && number != 13 ? $"{number}rd" : $"{number}th";
 
     public char[] GenerateColors()
     {

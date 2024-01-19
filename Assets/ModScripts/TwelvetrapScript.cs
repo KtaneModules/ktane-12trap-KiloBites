@@ -25,8 +25,12 @@ public class TwelvetrapScript : MonoBehaviour
 	public Material[] LEDMats;
 	public SpriteRenderer[] Glows;
 
+	private Coroutine[] ledPressAnimCoroutines;
+	private Coroutine[] cycleCoroutines = new Coroutine[2];
 	private Color[] coloursForRends = new Color[] { Color.red, new Color(1, 1, 0, 1), Color.green, Color.cyan, Color.blue, Color.magenta, Color.white }; //Why the hell is Color.yellow not 1, 1, 0. It's ugly.
 	private List<int> colours = new List<int>();
+	private float ledInitPos;
+	private int[] offLEDs = new int[2];
 	private bool cannotPress = true, moduleSolved;
 
 	private Sprite[][] arrowSprites;
@@ -92,6 +96,9 @@ public class TwelvetrapScript : MonoBehaviour
     {
 		moduleId = moduleIdCounter++;
 
+		ledPressAnimCoroutines = new Coroutine[LEDSelectables.Length];
+		ledInitPos = LEDSelectables[0].GetComponentsInChildren<MeshRenderer>().Where(x => x.name == "LED").First().transform.localPosition.y;
+
 		foreach (KMSelectable led in LEDSelectables)
 			led.OnInteract += delegate () { LEDPress(led); return false; };
 
@@ -133,7 +140,11 @@ public class TwelvetrapScript : MonoBehaviour
 			return;
 
 		var ix = Array.IndexOf(LEDSelectables, led);
-	}
+
+		if (ledPressAnimCoroutines[ix] != null)
+			StopCoroutine(ledPressAnimCoroutines[ix]);
+		ledPressAnimCoroutines[ix] = StartCoroutine(LEDPressAnim(ix));
+    }
 
 	void LightLED(int pos, Color colour)
 	{
@@ -145,6 +156,70 @@ public class TwelvetrapScript : MonoBehaviour
 	{
         LEDRends[pos].material = LEDMats[0];
         LEDRends[pos].material.color = Glows[pos].color = Color.clear;
+    }
+
+	void AssignLEDs()
+	{
+		for (int i = 0; i < LEDRends.Length; i++)
+			LightLED(i, coloursForRends[colours[i]]);
+        for (int i = 0; i < offLEDs.Length; i++)
+			UnlightLED(offLEDs[i]);
+    }
+
+	void CycleLEDs() //float cycleOneInterval = 2.5f /* 30 / 12f */, float cycleTwoInterval = 1f /* 12 / 12f */
+    {
+		offLEDs[0] = offLEDs[1] = 0;
+		AssignLEDs();
+		for (int i = 0; i < 2; i++)
+		{
+			if (cycleCoroutines[i] != null)
+				StopCoroutine(cycleCoroutines[i]);
+			cycleCoroutines[i] = StartCoroutine(PerformRotations(i, new[] { 2.5f, 1f }[i]));
+        }
+	}
+
+	private IEnumerator PerformRotations(int ix, float interval)
+	{
+        while (true)
+        {
+			float timer = 0;
+			while (timer < interval)
+			{
+				yield return null;
+				timer += Time.deltaTime;
+			}
+			offLEDs[ix] = (offLEDs[ix] + 1) % LEDRends.Length;
+            AssignLEDs();
+        }
+    }
+
+	private IEnumerator LEDPressAnim(int ix, float duration = 0.05f)
+    {
+        Audio.PlaySoundAtTransform("led press", LEDSelectables[ix].transform);
+        var target = LEDSelectables[ix].GetComponentsInChildren<MeshRenderer>().Where(x => x.name == "LED").First();
+        target.transform.localPosition = new Vector3(target.transform.localPosition.x, ledInitPos, target.transform.localPosition.z);
+        Glows[ix].transform.localScale = Vector3.one * 0.225f;
+        duration /= 2;  //Because duration is for the whole animation
+        float timer = 0;
+        while (timer < duration)
+        {
+            yield return null;
+            timer += Time.deltaTime;
+            target.transform.localPosition = new Vector3(target.transform.localPosition.x, Mathf.Lerp(ledInitPos, 0, timer / duration), target.transform.localPosition.z);
+			Glows[ix].transform.localScale = Vector3.one * Mathf.Lerp(0.225f, 0.2f, timer / duration);
+        }
+        target.transform.localPosition = new Vector3(target.transform.localPosition.x, 0, target.transform.localPosition.z);
+        Glows[ix].transform.localScale = Vector3.one * 0.2f;
+        timer = 0;
+        while (timer < duration)
+        {
+            yield return null;
+            timer += Time.deltaTime;
+            target.transform.localPosition = new Vector3(target.transform.localPosition.x, Mathf.Lerp(0, ledInitPos, timer / duration), target.transform.localPosition.z);
+            Glows[ix].transform.localScale = Vector3.one * Mathf.Lerp(0.2f, 0.225f, timer / duration);
+        }
+        target.transform.localPosition = new Vector3(target.transform.localPosition.x, ledInitPos, target.transform.localPosition.z);
+        Glows[ix].transform.localScale = Vector3.one * 0.225f;
     }
 
 	private IEnumerator IntroAnim(float lowerGlowOriginal, float openingPause = 0.5f, float activateInterval = 0.35f, float hologramSpreadDur = 0.05f)
@@ -178,6 +253,7 @@ public class TwelvetrapScript : MonoBehaviour
 		for (int i = 0; i < 12; i++)
 			LightLED(i, coloursForRends[colours[i]]);
         Audio.PlaySoundAtTransform("loaded", transform);
+        CycleLEDs();
 
         timer = 0;
         while (timer < 0.5f)
@@ -209,7 +285,6 @@ public class TwelvetrapScript : MonoBehaviour
             Emblem.transform.parent.localScale = new Vector3(1, 1, Mathf.Lerp(0.05f, 1, timer / hologramSpreadDur));
         }
         Emblem.transform.parent.localScale = Vector3.one;
-
         cannotPress = false;
     }
 
