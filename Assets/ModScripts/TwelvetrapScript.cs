@@ -15,6 +15,7 @@ public class TwelvetrapScript : MonoBehaviour
     public KMBombInfo Bomb;
 	public KMAudio Audio;
 	public KMBombModule Module;
+	public KMColorblindMode Colorblind;
     public KMSelectable[] LEDSelectables;
     public SpriteRenderer Emblem, Arrow;
     public Sprite[] EmblemSprites, ArrowOneSprites, ArrowTwoSprites, ArrowThreeSprites;
@@ -24,6 +25,7 @@ public class TwelvetrapScript : MonoBehaviour
     public SpriteRenderer LowerGlow;
 	public Material[] LEDMats;
 	public SpriteRenderer[] Glows;
+	public TextMesh[] CBTexts;
 
 	private Coroutine[] ledPressAnimCoroutines;
 	private Coroutine[] cycleCoroutines = new Coroutine[2];
@@ -31,7 +33,7 @@ public class TwelvetrapScript : MonoBehaviour
 	private List<int> colours = new List<int>();
 	private float ledInitPos;
 	private int[] offLEDs = new int[2];
-	private bool cannotPress = true, moduleSolved;
+	private bool cannotPress = true, moduleSolved, cbActive;
 
 	private Sprite[][] arrowSprites;
 
@@ -117,6 +119,7 @@ public class TwelvetrapScript : MonoBehaviour
 		for (int i = 0; i < 12; i++)
 			UnlightLED(i);
 
+		cbActive = Colorblind.ColorblindModeActive;
 		
     }
 
@@ -124,6 +127,9 @@ public class TwelvetrapScript : MonoBehaviour
 	void Start()
     {
 		secRuleset = new HighLevelSecRules(secSets, SelectedSec());
+
+		foreach (var text in CBTexts)
+			text.text = string.Empty;
 
         Calculate();
     }
@@ -161,9 +167,17 @@ public class TwelvetrapScript : MonoBehaviour
 	void AssignLEDs()
 	{
 		for (int i = 0; i < LEDRends.Length; i++)
-			LightLED(i, coloursForRends[colours[i]]);
+		{
+            LightLED(i, coloursForRends[colours[i]]);
+			CBTexts[i].text = cbActive && colours[i] != 6 ? colorNames[colours[i]][0].ToString() : string.Empty;
+        }
+			
         for (int i = 0; i < offLEDs.Length; i++)
-			UnlightLED(offLEDs[i]);
+		{
+            UnlightLED(offLEDs[i]);
+			CBTexts[offLEDs[i]].text = string.Empty;
+        }
+			
     }
 
 	void CycleLEDs() //float cycleOneInterval = 2.5f /* 30 / 12f */, float cycleTwoInterval = 1f /* 12 / 12f */
