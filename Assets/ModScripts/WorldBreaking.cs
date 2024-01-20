@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using KModkit;
-using UnityEngine;
 
 public class WorldBreaking
 {
@@ -85,13 +84,44 @@ public class WorldBreaking
 
     private static readonly char[] ColorTable = "RMWBGCYGYRCBWMWBMRYGCMWGYCRBCRBGMYWBCYWRMGYGCMWBR".ToCharArray();
 
-    public bool[] GoCommitExplode(bool[] grid)
+    public bool[] GoCommitExplode(int[] randomCoords, int[] bombType)
     {
         var finalGrid = new bool[49];
 
+        for (int i = 0; i < bombType.Length; i++)
+            for (int j = 0; j < randomCoords.Length; j++)
+                switch (bombType[i])
+                {
+                    case 0:
+                        finalGrid[randomCoords[j]] = true;
+                        break;
+                    case 1:
+                        for (int k = 0; k < 4; k++)
+                        {
+                            if (CheckAdjacent(randomCoords[j])[k] == null)
+                                continue;
+
+                            if (finalGrid[CheckAdjacent(randomCoords[j])[k].Value])
+                                continue;
+
+                            finalGrid[CheckAdjacent(randomCoords[j])[k].Value] = true;
+                        }
+                        break;
+                    case 2:
+                        break;
+                }
 
 
         return finalGrid;
+    }
+
+    public char[] FinalColors(int[] finalIdx)
+    {
+        var colors = Enumerable.Range(0, 49).Where(x => finalIdx.Contains(x)).Select(x => ColorTable[x]).ToArray();
+
+        Array.Reverse(colors);
+
+        return colors;
     }
 
 
