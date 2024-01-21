@@ -48,9 +48,27 @@ public class WorldBreaking
         };
 
         for (int i = 0; i < adj.Length; i++)
-            adj[i] = adj[i] < 0 || adj[i] > 7 ? null : ((i % 2 != 0 ? x : adj[i]) * 7) + (i % 2 == 0 ? y : adj[i]);
+            adj[i] = adj[i] < 0 || adj[i] > 6 ? null : ((i % 2 != 0 ? x : adj[i]) * 7) + (i % 2 == 0 ? y : adj[i]);
 
         return adj;
+    }
+
+    private int? TwoSpace(int pos, int ix)
+    {
+        var x = pos / 7;
+        var y = pos % 7;
+
+        int?[] adj =
+        {
+            x - 1,
+            y + 1,
+            x + 1,
+            y - 1
+        };
+
+        int? posToCheck = adj[ix] < 0 || adj[ix] > 6 ? null : ((ix % 2 != 0 ? x : adj[ix]) * 7) + (ix % 2 == 0 ? y : adj[ix]);
+
+        return posToCheck;
     }
 
     private int?[] CheckDiagonalAdjacent(int pos)
@@ -84,9 +102,11 @@ public class WorldBreaking
 
     private static readonly char[] ColorTable = "RMWBGCYGYRCBWMWBMRYGCMWGYCRBCRBGMYWBCYWRMGYGCMWBR".ToCharArray();
 
-    public bool[] GoCommitExplode(int[] randomCoords, int[] bombType)
+    public bool[] GoCommitExplode(int[] randomCoords, int[] bombType, bool[] selectedGrid)
     {
         var finalGrid = new bool[49];
+
+        var ignoredNumbers = Enumerable.Range(0, 49).Where(x => !selectedGrid[x]).ToList();
 
         for (int i = 0; i < bombType.Length; i++)
             for (int j = 0; j < randomCoords.Length; j++)
@@ -101,13 +121,35 @@ public class WorldBreaking
                             if (CheckAdjacent(randomCoords[j])[k] == null)
                                 continue;
 
-                            if (finalGrid[CheckAdjacent(randomCoords[j])[k].Value])
+                            if (finalGrid[CheckAdjacent(randomCoords[j])[k].Value] || ignoredNumbers.Contains(CheckAdjacent(randomCoords[j])[k].Value))
                                 continue;
 
                             finalGrid[CheckAdjacent(randomCoords[j])[k].Value] = true;
                         }
                         break;
                     case 2:
+                        for (int k = 0; k < 4; k++)
+                        {
+                            if (CheckAdjacent(randomCoords[j])[k] == null)
+                                continue;
+
+                            if (TwoSpace(CheckAdjacent(randomCoords[j])[k].Value, k) == null)
+                                continue;
+
+                            if (CheckDiagonalAdjacent(randomCoords[j])[k] == null)
+                                continue;
+
+                            if (finalGrid[CheckAdjacent(randomCoords[j])[k].Value] || finalGrid[TwoSpace(CheckAdjacent(randomCoords[j])[k].Value, k).Value] ||
+                                finalGrid[CheckDiagonalAdjacent(randomCoords[j])[k].Value] || 
+                                ignoredNumbers.Any(x => CheckAdjacent(randomCoords[j])[k].Value == x || 
+                                TwoSpace(CheckAdjacent(randomCoords[j])[k].Value, k).Value == x || 
+                                CheckDiagonalAdjacent(randomCoords[j])[k].Value == x))
+                                continue;
+
+                            finalGrid[CheckAdjacent(randomCoords[j])[k].Value] = true;
+                            finalGrid[TwoSpace(CheckAdjacent(randomCoords[j])[k].Value, k).Value] = true;
+                            finalGrid[CheckDiagonalAdjacent(randomCoords[j])[k].Value] = true;
+                        }
                         break;
                 }
 
