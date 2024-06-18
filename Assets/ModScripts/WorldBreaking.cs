@@ -5,6 +5,71 @@ using KModkit;
 
 public class WorldBreaking
 {
+    public int[] GenerateCoordinate(bool[] grid, int[] cases)
+    {
+        var candidates = new List<int>();
+
+        var modifiedGrid = grid.ToArray();
+
+        
+
+        for (int i = 0; i < cases.Length; i++)
+        {
+            var candidateNumbers = new Queue<int>(Enumerable.Range(0, 49).Where(x => modifiedGrid[x]).ToList().Shuffle());
+            var number = 0;
+
+
+            while (candidateNumbers.Count > 0)
+            {
+                var num = candidateNumbers.Dequeue();
+                var adj = CheckAdjacent(num);
+                var diag = CheckDiagonalAdjacent(num);
+
+                switch (cases[i])
+                {
+                    case 0:
+                        if (modifiedGrid[num])
+                        {
+                            number = num;
+                            goto found;
+                        }
+                        break;
+                            
+                    case 1:
+                        if (adj.Where(x => x != null).All(x => modifiedGrid[x.Value]))
+                        {
+                            number = num;
+                            goto found;
+                        }
+                        break;
+
+                    case 2:
+                        if (adj.Where(x => x != null).All(x => modifiedGrid[x.Value]) && 
+                            adj.Where(x => x != null).Select(x => TwoSpace(x.Value, Array.IndexOf(adj, x))).Where(x => x != null).All(x => modifiedGrid[x.Value]) &&
+                            diag.Where(x => x != null).All(x => modifiedGrid[x.Value]))
+                        {
+                            number = num;
+                            goto found;
+                        }
+                        break;
+                }
+            }
+
+            throw new Exception("Puzzle cannot be generated!");
+
+        found:;
+            candidates.Add(number);
+
+        }
+
+
+
+
+            return candidates.ToArray();
+    }
+
+    public int[] GenerateCoordinateCases() => new[] { 2, 2, 2, 0, 0, 0, 1, 1, 1 }.ToArray();
+
     public static bool[] GenerateGrid(KMBombInfo bomb)
     {
         var grid = string.Empty;
@@ -88,7 +153,8 @@ public class WorldBreaking
 
         for (int i = 0; i < 4; i++)
         {
-            if (adj[i].Any(num => num < 0 || num > 7))
+
+            if (adj[i].Any(num => num < 0 || num > 6))
             {
                 actualAdj[i] = null;
                 continue;
@@ -102,64 +168,64 @@ public class WorldBreaking
 
     private static readonly char[] ColorTable = "RMWBGCYGYRCBWMWBMRYGCMWGYCRBCRBGMYWBCYWRMGYGCMWBR".ToCharArray();
 
-    public bool[] GoCommitExplode(int[] randomCoords, int[] bombType, bool[] selectedGrid)
+    public int[] GoCommitExplode(bool[] grid, int[] generatedCoordinates, int[] generatedCases)
     {
-        var finalGrid = new bool[49];
+        var modifiedGrid = grid.ToArray();
 
-        var ignoredNumbers = Enumerable.Range(0, 49).Where(x => !selectedGrid[x]).ToList();
+        for (int i = 0; i < generatedCoordinates.Length; i++)
+        {
+            var adjacents = CheckAdjacent(generatedCoordinates[i]);
+            var diagonals = CheckDiagonalAdjacent(generatedCoordinates[i]);
+            
 
-        for (int i = 0; i < bombType.Length; i++)
-            for (int j = 0; j < randomCoords.Length; j++)
-                switch (bombType[i])
-                {
-                    case 0:
-                        finalGrid[randomCoords[j]] = true;
-                        break;
-                    case 1:
-                        for (int k = 0; k < 4; k++)
+            switch (generatedCases[i])
+            {
+                case 0:
+
+                    modifiedGrid[generatedCoordinates[i]] = false;
+                    break;
+                case 1:
+
+                    modifiedGrid[generatedCoordinates[i]] = false;
+
+                    for (int j = 0; j < 4; j++)
+                    {
+                        if (adjacents[j] == null)
+                            continue;
+
+                        modifiedGrid[adjacents[j].Value] = false;
+
+                    }
+                    break;
+                case 2:
+
+                    for (int j = 0; j < 4; j++)
+                    {
+                        if (adjacents[j] != null)
                         {
-                            if (CheckAdjacent(randomCoords[j])[k] == null)
-                                continue;
+                            modifiedGrid[adjacents[j].Value] = false;
 
-                            if (finalGrid[CheckAdjacent(randomCoords[j])[k].Value] || ignoredNumbers.Contains(CheckAdjacent(randomCoords[j])[k].Value))
-                                continue;
-
-                            finalGrid[CheckAdjacent(randomCoords[j])[k].Value] = true;
+                            if (TwoSpace(adjacents[j].Value, j) != null)
+                                modifiedGrid[TwoSpace(adjacents[j].Value, j).Value] = false;
                         }
-                        break;
-                    case 2:
-                        for (int k = 0; k < 4; k++)
-                        {
-                            if (CheckAdjacent(randomCoords[j])[k] == null)
-                                continue;
-
-                            if (TwoSpace(CheckAdjacent(randomCoords[j])[k].Value, k) == null)
-                                continue;
-
-                            if (CheckDiagonalAdjacent(randomCoords[j])[k] == null)
-                                continue;
-
-                            if (finalGrid[CheckAdjacent(randomCoords[j])[k].Value] || finalGrid[TwoSpace(CheckAdjacent(randomCoords[j])[k].Value, k).Value] ||
-                                finalGrid[CheckDiagonalAdjacent(randomCoords[j])[k].Value] || 
-                                ignoredNumbers.Any(x => CheckAdjacent(randomCoords[j])[k].Value == x || 
-                                TwoSpace(CheckAdjacent(randomCoords[j])[k].Value, k).Value == x || 
-                                CheckDiagonalAdjacent(randomCoords[j])[k].Value == x))
-                                continue;
-
-                            finalGrid[CheckAdjacent(randomCoords[j])[k].Value] = true;
-                            finalGrid[TwoSpace(CheckAdjacent(randomCoords[j])[k].Value, k).Value] = true;
-                            finalGrid[CheckDiagonalAdjacent(randomCoords[j])[k].Value] = true;
-                        }
-                        break;
-                }
+                            
+                        if (diagonals[j] != null)
+                            modifiedGrid[diagonals[j].Value] = false;
 
 
-        return finalGrid;
+                    }
+                    break;
+                    
+            }
+        }
+
+        return Enumerable.Range(0, 49).Where(x => modifiedGrid[x]).ToArray();
     }
 
-    public char[] FinalColors(int[] finalIdx)
+    public char[] FinalColors(int[] finalIndexes)
     {
-        var colors = Enumerable.Range(0, 49).Where(x => finalIdx.Contains(x)).Select(x => ColorTable[x]).ToArray();
+
+        var colors = Enumerable.Range(0, 49).Where(x => finalIndexes.Contains(x)).Select(x => ColorTable[x]).ToArray();
 
         Array.Reverse(colors);
 

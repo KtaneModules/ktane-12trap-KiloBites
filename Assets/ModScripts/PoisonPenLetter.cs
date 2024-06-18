@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static UnityEngine.Random;
 
 public class PoisonPenLetter
 {
@@ -19,19 +18,22 @@ public class PoisonPenLetter
         "WE MUST EXIT THIS PLACE FOR OUR OWN GOOD CONVINCE AS MANY OTHERS AS YOU THINK POSSIBLE LEST OUR LIVES END"
     };
 
-    private char[] letters = new string("ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray().Shuffle()).Substring(0, 3).ToCharArray();
+    private char[] letters = new char[3];
     private int[] positions = new int[3];
 
     public string[] GenerateMessage()
     {
         var messages = new string[3];
 
+        for (int i = 0; i < 3; i++)
+            letters[i] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".PickRandom();
+
         var getLetters = getLetter.Join("").Where(x => !char.IsWhiteSpace(x)).Join("");
 
         for (int i = 0; i < 3; i++)
         {
             var filteredLetter = FilterLetters(getLetters, letters[i]);
-            positions[i] = Range(0, filteredLetter.Length);
+            positions[i] = Enumerable.Range(0, filteredLetter.Length).PickRandom();
             messages[i] = $"{RankSystem(positions[i] + 1)} {letters[i]}";
         }
 
@@ -55,7 +57,7 @@ public class PoisonPenLetter
                 "ELS".Contains(letters[i]) ? 'C' :
                 "WPIB".Contains(letters[i]) ? 'B' : '?';
 
-        return colors;
+        return Enumerable.Range(0, 3).OrderBy(x => positions[x]).Select(x => colors[x]).ToArray();
     }
 
 }

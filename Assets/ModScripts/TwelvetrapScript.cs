@@ -89,7 +89,11 @@ public class TwelvetrapScript : MonoBehaviour
 		return randomSelectValue ? secSets.PickRandom() : new HighLevelSec(selected);
 	}
 
+
+
 	private HighLevelSecRules secRuleset;
+
+	private readonly PoisonPenLetter poisonpenLetter = new PoisonPenLetter();
 
 	private Sprite GetEmblemSprite(string name) => EmblemSprites.Where(x => x.name == name).First();
 	private Sprite GetArrowSprite(string name, int arr) => arrowSprites[arr].Where(x => x.name == name).First();
@@ -138,6 +142,43 @@ public class TwelvetrapScript : MonoBehaviour
 	{
 		for (int i = 0; i < 12; i++)
 			colours.Add(Range(0, 7));
+
+		// High-Level Security
+
+		// Poison-Pen Letter
+
+		//Log(poisonpenLetter.GenerateMessage().Join(", "));
+		//Log(poisonpenLetter.GenerateColors().Join(""));
+
+	// My World Is Breaking
+		var generatedGrid = WorldBreaking.GenerateGrid(Bomb);
+        var cases = new WorldBreaking().GenerateCoordinateCases();
+        var generateCoords = new WorldBreaking().GenerateCoordinate(generatedGrid, cases);
+
+		int attempts = 0;
+
+	tryagain:
+		
+		
+
+		var colors = new WorldBreaking().GoCommitExplode(generatedGrid, generateCoords, cases);
+
+		if (colors.Count() != 3)
+		{
+			attempts++;
+
+			if (attempts >= 1000)
+			{
+				Log(generateCoords.Join());
+				Log(colors.Join());
+				throw new Exception("Too many attempts have been made");
+			}
+			goto tryagain;
+		}
+
+		//Log(new WorldBreaking().FinalColors(colors).Join(""));
+
+
 	}
 
 	void LEDPress(KMSelectable led)
