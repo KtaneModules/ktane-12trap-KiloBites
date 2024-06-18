@@ -30,7 +30,7 @@ public class TwelvetrapScript : MonoBehaviour
 	private Coroutine[] ledPressAnimCoroutines;
 	private Coroutine[] cycleCoroutines = new Coroutine[2];
 	private Color[] coloursForRends = new Color[] { Color.red, new Color(1, 1, 0, 1), Color.green, Color.cyan, Color.blue, Color.magenta, Color.white }; //Why the hell is Color.yellow not 1, 1, 0. It's ugly.
-	private List<int> colours = new List<int>();
+	private List<int> colours;
 	private float ledInitPos;
 	private int[] offLEDs = new int[2];
 	private bool cannotPress = true, moduleSolved, cbActive;
@@ -38,62 +38,6 @@ public class TwelvetrapScript : MonoBehaviour
 	private Sprite[][] arrowSprites;
 
 	private static readonly string[] colorNames = { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" };
-
-	private static readonly HighLevelSec[] secSets =
-	{
-		new HighLevelSec(new string[] { "Arbott", "Korea", "Fine Art", "DISPATCHED", "CBC" }),
-		new HighLevelSec(new string[] { "Archer", "China", "Economics", "KILLED IN ACT.", "WWY" }),
-		new HighLevelSec(new string[] { "Caleb", "U.S.A.", "Education", "CANDIDATE", "GYR" }),
-		new HighLevelSec(new string[] { "Connie", "Greece", "Astronomy", "CANDIDATE", "YMR" }),
-		new HighLevelSec(new string[] { "Daniel", "Armenia", "Medicine", "CANDIDATE", "PWY" }),
-		new HighLevelSec(new string[] { "Dekashi", "Japan", "Music", "AVAILABLE", "BMB" }),
-		new HighLevelSec(new string[] { "Douma", "Armenia", "Chemistry", "UNWORTHY", "YBB" }),
-		new HighLevelSec(new string[] { "Eriksson", "Greece", "Architecture", "DISPATCHED", "CYG" }),
-		new HighLevelSec(new string[] { "Fangi", "Thailand", "Marketing", "AVAILABLE", "YYR" }),
-		new HighLevelSec(new string[] { "Goodman", "U.K.", "Nat. Sciences", "CANDIDATE", "MRR" }),
-		new HighLevelSec(new string[] { "Jackson", "U.K.", "Media & Comm.", "SUSPECT", "YRC" }),
-		new HighLevelSec(new string[] { "John \"Scope\"", "Korea", "Business Mng.", "UNWORTHY", "GGM" }),
-		new HighLevelSec(new string[] { "Jonathan", "U.S.A.", "Statistics", "AVAILABLE", "BRY" }),
-		new HighLevelSec(new string[] { "King", "Korea", "Soc. Sciences", "CANDIDATE", "MMC" }),
-		new HighLevelSec(new string[] { "Kusane", "Thailand", "Thai", "UNWORTHY", "MGW" }),
-		new HighLevelSec(new string[] { "Manny", "China", "Int. Relations", "CANDIDATE", "WGW" }),
-		new HighLevelSec(new string[] { "Nicholas", "U.K.", "Law", "SUSPECT", "BRW" }),
-		new HighLevelSec(new string[] { "Paartas", "Armenia", "Engineering", "CANDIDATE", "YBM" }),
-		new HighLevelSec(new string[] { "Jamie", "Greece", "Mathematics", "KILLED IN ACT.", "RRR" }),
-		new HighLevelSec(new string[] { "Raymond", "China", "Business Adm.", "DISPATCHED", "RYW" }),
-		new HighLevelSec(new string[] { "Shaun", "Japan", "Art & Design", "CANDIDATE", "CWM" }),
-		new HighLevelSec(new string[] { "Vincent", "Japan", "Life Sciences", "CANDIDATE", "BBG" }),
-		new HighLevelSec(new string[] { "William", "Thailand", "Management", "DEAD", "MYB" }),
-		new HighLevelSec(new string[] { "T.O.A.S.T.", "U.S.A.", "Anthropology", "ANNOUNCER", "GRB" })
-	};
-
-	private HighLevelSec SelectedSec()
-	{
-		var selectedValues = new int[2];
-
-		var rnd = Range(0, secSets.Length);
-
-		selectedValues[0] = Range(0, 4);
-		selectedValues[1] = Enumerable.Range(0, 4).Where(x => x != selectedValues[0]).PickRandom();
-
-		var randomSelectValue = Range(0, 2) == 0;
-
-		var selectedSecSet = secSets[rnd];
-
-		var selected = new string[5];
-
-		for (int i = 0; i < 5; i++)
-			selected[i] = selectedValues.Contains(i) || i == 4 ? selectedSecSet.SecurityInformation[i] : 
-				Enumerable.Range(0, secSets.Length).Where(x => x != rnd).Select(x => secSets[x]).Where(x => x.SecurityInformation[i] != selectedSecSet.SecurityInformation[selectedValues[0]] && x.SecurityInformation[i] != selectedSecSet.SecurityInformation[selectedValues[1]]).PickRandom().SecurityInformation[i];
-
-		return randomSelectValue ? secSets.PickRandom() : new HighLevelSec(selected);
-	}
-
-
-
-	private HighLevelSecRules secRuleset;
-
-	private readonly PoisonPenLetter poisonpenLetter = new PoisonPenLetter();
 
 	private Sprite GetEmblemSprite(string name) => EmblemSprites.Where(x => x.name == name).First();
 	private Sprite GetArrowSprite(string name, int arr) => arrowSprites[arr].Where(x => x.name == name).First();
@@ -130,7 +74,6 @@ public class TwelvetrapScript : MonoBehaviour
 	
 	void Start()
     {
-		secRuleset = new HighLevelSecRules(secSets, SelectedSec());
 
 		foreach (var text in CBTexts)
 			text.text = string.Empty;
@@ -140,8 +83,7 @@ public class TwelvetrapScript : MonoBehaviour
 
 	void Calculate()
 	{
-		for (int i = 0; i < 12; i++)
-			colours.Add(Range(0, 7));
+		colours = Enumerable.Range(0, 12).Select(_ => Range(0, 7)).ToList();
 
 		// High-Level Security
 
@@ -149,34 +91,6 @@ public class TwelvetrapScript : MonoBehaviour
 
 		//Log(poisonpenLetter.GenerateMessage().Join(", "));
 		//Log(poisonpenLetter.GenerateColors().Join(""));
-
-	// My World Is Breaking
-		var generatedGrid = WorldBreaking.GenerateGrid(Bomb);
-        var cases = new WorldBreaking().GenerateCoordinateCases();
-        var generateCoords = new WorldBreaking().GenerateCoordinate(generatedGrid, cases);
-
-		int attempts = 0;
-
-	tryagain:
-		
-		
-
-		var colors = new WorldBreaking().GoCommitExplode(generatedGrid, generateCoords, cases);
-
-		if (colors.Count() != 3)
-		{
-			attempts++;
-
-			if (attempts >= 1000)
-			{
-				Log(generateCoords.Join());
-				Log(colors.Join());
-				throw new Exception("Too many attempts have been made");
-			}
-			goto tryagain;
-		}
-
-		//Log(new WorldBreaking().FinalColors(colors).Join(""));
 
 
 	}
