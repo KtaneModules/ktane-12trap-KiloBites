@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEngine.Random;
 
 public class SecOption
 {
@@ -26,10 +27,8 @@ public class HighLevelSecurity
 
     public SecOption[] AllSecTypes;
 
-    public HighLevelSecurity(Color[] colors)
+    private string[][] allTypes =
     {
-        var allTypes = new[]
-        {
             new[] { "Arbott", "Korea", "Fine Art", "DISPATCHED" },
             new[] { "Archer", "China", "Economics", "KILLED IN ACT." },
             new[] { "Caleb", "U.S.A", "Education", "CANDIDATE" },
@@ -54,10 +53,10 @@ public class HighLevelSecurity
             new[] { "Vincent", "Japan", "Life Sciences", "CANDIDATE" },
             new[] { "William", "Thailand", "Management", "DEAD" },
             new[] { "T.O.A.S.T.", "U.S.A.", "Anthropology", "ANNOUNCER" }
-        };
+    };
 
-        var colorSet = new int[][]
-        {
+    private int[][] colorTypes =
+    {
             new[] { 3, 4, 3 },
             new[] { 6, 6, 1 },
             Enumerable.Range(0, 3).Reverse().ToArray(),
@@ -81,7 +80,12 @@ public class HighLevelSecurity
             new[] { 4, 4, 2 },
             new[] { 5, 1, 4 },
             new[] { 2, 0, 4 }
-        }.Select(x => x.Select(y => colors[y]).ToArray()).ToArray();
+    };
+
+    public HighLevelSecurity(Color[] colors)
+    {
+
+        var colorSet = colorTypes.Select(x => x.Select(y => colors[y]).ToArray()).ToArray();
 
         AllSecTypes = Enumerable.Range(0, allTypes.Length).Select(x => new SecOption(allTypes[x][0], allTypes[x][1], allTypes[x][2], allTypes[x][3], colorSet[x])).ToArray();
     }

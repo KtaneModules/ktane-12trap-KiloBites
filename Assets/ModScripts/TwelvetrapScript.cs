@@ -35,6 +35,8 @@ public class TwelvetrapScript : MonoBehaviour
 	private int[] offLEDs = new int[2];
 	private bool cannotPress = true, moduleSolved, cbActive;
 
+	private MyWorldIsBreaking puzzleGenerationGivesMeAStroke = new MyWorldIsBreaking();
+
 	private Sprite[][] arrowSprites;
 
 	private static readonly string[] colorNames = { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" };
@@ -92,10 +94,23 @@ public class TwelvetrapScript : MonoBehaviour
 		//Log(poisonpenLetter.GenerateMessage().Join(", "));
 		//Log(poisonpenLetter.GenerateColors().Join(""));
 
+		
+        puzzleGenerationGivesMeAStroke.GeneratePuzzle(Bomb.GetBatteryCount());
+
+        Log($"Before modification: {puzzleGenerationGivesMeAStroke}");
+
+        var grabbedCoordinates = puzzleGenerationGivesMeAStroke.CoordinateGroups;
+		var grabbedBombTypes = puzzleGenerationGivesMeAStroke.BombTypeGroups;
+
+		for (int i = 0; i < grabbedCoordinates.Count; i++)
+			Log($"Coordinates: {grabbedCoordinates[i].Join(", ")} Color: {grabbedBombTypes[i].Select(x => "BKR"[(int)x]).Join(", ")}");
+
+        Log(puzzleGenerationGivesMeAStroke.Colors.Join(""));
 
 	}
 
-	void LEDPress(KMSelectable led)
+
+    void LEDPress(KMSelectable led)
 	{
 		if (moduleSolved || cannotPress)
 			return;

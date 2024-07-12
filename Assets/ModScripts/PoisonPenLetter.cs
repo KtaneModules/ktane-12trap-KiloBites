@@ -16,15 +16,14 @@ public class PoisonPenLetter
         "WE MUST EXIT THIS PLACE FOR OUR OWN GOOD CONVINCE AS MANY OTHERS AS YOU THINK POSSIBLE LEST OUR LIVES END"
     };
 
-    private char[] letters = new char[3];
+    private char[] letters;
     private int[] positions = new int[3];
 
     public string[] GenerateMessage()
     {
         var messages = new string[3];
 
-        for (int i = 0; i < 3; i++)
-            letters[i] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".PickRandom();
+        letters = Enumerable.Range(0, 3).Select(_ => "ABCDEFGHIJKLMNOPQRSTUVWXYZ".PickRandom()).ToArray();
 
         var getLetters = getLetter.Join("").Where(x => !char.IsWhiteSpace(x)).Join("");
 
