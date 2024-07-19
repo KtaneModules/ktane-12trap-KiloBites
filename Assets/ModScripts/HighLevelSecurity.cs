@@ -25,9 +25,9 @@ public class SecOption
 public class HighLevelSecurity
 {
 
-    public SecOption[] AllSecTypes;
+    private SecOption[] allSecTypes;
 
-    private string[][] allTypes =
+    private static readonly string[][] allTypes =
     {
             new[] { "Arbott", "Korea", "Fine Art", "DISPATCHED" },
             new[] { "Archer", "China", "Economics", "KILLED IN ACT." },
@@ -55,7 +55,7 @@ public class HighLevelSecurity
             new[] { "T.O.A.S.T.", "U.S.A.", "Anthropology", "ANNOUNCER" }
     };
 
-    private int[][] colorTypes =
+    private static readonly int[][] colorTypes =
     {
             new[] { 3, 4, 3 },
             new[] { 6, 6, 1 },
@@ -87,6 +87,36 @@ public class HighLevelSecurity
 
         var colorSet = colorTypes.Select(x => x.Select(y => colors[y]).ToArray()).ToArray();
 
-        AllSecTypes = Enumerable.Range(0, allTypes.Length).Select(x => new SecOption(allTypes[x][0], allTypes[x][1], allTypes[x][2], allTypes[x][3], colorSet[x])).ToArray();
+        allSecTypes = Enumerable.Range(0, allTypes.Length).Select(x => new SecOption(allTypes[x][0], allTypes[x][1], allTypes[x][2], allTypes[x][3], colorSet[x])).ToArray();
+    }
+
+    public SecOption SelectSec()
+    {
+        var selectedSec = allSecTypes.PickRandom();
+
+        var beIncorrect = Range(0, 2) == 0;
+
+        var colors = selectedSec.Colors;
+
+        if (beIncorrect)
+        {
+            var ixesToSelect = Enumerable.Range(0, 3).ToList().Shuffle().Take(2).OrderBy(x => x).ToArray();
+
+            var doRandom = Enumerable.Range(0, 3).Select(ixesToSelect.Contains).ToArray();
+
+            var tempColor = colors[ixesToSelect[1]];
+            var currentColor = colors[ixesToSelect[0]];
+
+            colors[ixesToSelect[0]] = tempColor;
+            colors[ixesToSelect[1]] = currentColor;
+
+            return new SecOption
+                (doRandom[0] ? allTypes.Select(x => x[0]).Where(x => !selectedSec.FirstName.Contains(x)).PickRandom() : selectedSec.FirstName, 
+                doRandom[1] ? allTypes.Select(x => x[1]).Where(x => !selectedSec.Nationality.Contains(x)).PickRandom() : selectedSec.Nationality, 
+                doRandom[2] ? allTypes.Select(x => x[2]).Where(x => !selectedSec.FieldOfStudy.Contains(x)).PickRandom() : selectedSec.FieldOfStudy, selectedSec.Status, colors);
+
+        }
+
+        return selectedSec;
     }
 }

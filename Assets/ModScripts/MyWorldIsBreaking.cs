@@ -207,7 +207,7 @@ public class MyWorldIsBreaking
         Log($"After modification: {modifiedGrid.Select(x => x ? 'X' : '-').Join("")}");
 
         coordinates = selectedCoords.Select(GetRowColumn).ToArray();
-        Colors = Enumerable.Range(0, 49).Where(x => modifiedGrid[x]).Select(x => colorGrid[x]).Reverse().ToArray();
+        Colors = Enumerable.Range(0, 49).Where(x => modifiedGrid[x]).Select(x => colorGrid[x]).ToArray();
         CoordinateGroups = coordinates.Select((x, i) => new { Index = i, Value = x }).GroupBy(x => x.Index / 3).Select(x => x.Select(v => v.Value).ToArray()).ToList();
         BombTypeGroups = GeneratedBombs.Select(x => x.BombType).Select((x, i) => new { Index = i, Value = x }).GroupBy(x => x.Index / 3).Select(x => x.Select(v => v.Value).ToArray()).ToList();
     }
