@@ -7,10 +7,10 @@ using KModkit;
 
 public class Arrow
 {
-    public int ArrowType { get; private set; }
-    public Color32 Color { get; private set; }
-    public int ArrowPattern { get; private set; }
-    public int Direction { get; private set; }
+    public int ArrowType { get; set; }
+    public Color32 Color { get; set; }
+    public int ArrowPattern { get; set; }
+    public int Direction { get; set; }
 
     public Arrow(int arrowType, Color32 color, int arrowPattern, int direction)
     {
@@ -38,7 +38,7 @@ public class Arrow
                 return 315;
         }
 
-        return -1;
+        throw new ArgumentOutOfRangeException($"{Direction} is an invalid direction index. It must be within the range of 0-5.");
     }
 }
 
@@ -73,5 +73,17 @@ public class BeyondRepairing
 
     public List<Arrow> GeneratedArrows;
     private List<Arrow[]> arrowPairs = new List<Arrow[]>();
+
+    private int currentPos;
+
+    public BeyondRepairing(KMBombInfo bomb)
+    {
+        while (arrowPairs.Count < 3)
+        {
+            var arrowPair = new Arrow[2];
+
+
+        }
+    }
 
 }
