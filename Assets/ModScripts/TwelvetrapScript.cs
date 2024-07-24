@@ -36,6 +36,7 @@ public class TwelvetrapScript : MonoBehaviour
 	private bool cannotPress = true, moduleSolved, cbActive;
 
 	private MyWorldIsBreaking puzzleGenerationGivesMeAStroke = new MyWorldIsBreaking();
+	private BeyondRepairing beyondRepairing;
 
 	private Sprite[][] arrowSprites;
 
@@ -104,7 +105,7 @@ public class TwelvetrapScript : MonoBehaviour
 		for (int i = 0; i < grabbedCoordinates.Count; i++)
 			Log($"Coordinates: {grabbedCoordinates[i].Join(", ")} Color: {grabbedBombTypes[i].Select(x => "BKR"[(int)x]).Join(", ")}");
 
-        Log(puzzleGenerationGivesMeAStroke.Colors.Join(""));
+		beyondRepairing = new BeyondRepairing(Bomb.GetBatteryCount(), Bomb.GetBatteryHolderCount());
 
 	}
 
@@ -269,6 +270,28 @@ public class TwelvetrapScript : MonoBehaviour
         }
         Emblem.transform.parent.localScale = Vector3.one;
         cannotPress = false;
+    }
+
+	IEnumerator CycleArrows()
+	{
+		var getArrows = beyondRepairing.GeneratedArrows;
+
+        while (true)
+		{
+			Arrow.enabled = true;
+
+			for (int i = 0; i < 6; i++)
+			{
+				Arrow.sprite = arrowSprites[getArrows[i].ArrowType][getArrows[i].ArrowPattern];
+				Arrow.color = getArrows[i].Color;
+				Arrow.transform.localEulerAngles = new Vector3(0, getArrows[i].GetDirRotation(), 0);
+
+				yield return new WaitForSeconds(1);
+			}
+
+			Arrow.enabled = false;
+			yield return new WaitForSeconds(1);
+		}
     }
 
     private IEnumerator EmblemJitter(float bound = 0.0001f)

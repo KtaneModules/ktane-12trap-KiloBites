@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static UnityEngine.Random;
-using KModkit;
+using static UnityEngine.Debug;
 
 public class Arrow
 {
@@ -71,19 +71,102 @@ public class BeyondRepairing
 
     private static readonly Color32[] arrowColors = { new Color32(255, 0, 0, 200), new Color32(255, 255, 0, 200), new Color32(0, 255, 0, 200), new Color32(0, 255, 255, 200), new Color32(0, 0, 255, 200), new Color32(255, 0, 255, 200), new Color32(255, 255, 255, 200) };
 
-    public List<Arrow> GeneratedArrows;
+    public List<Arrow> GeneratedArrows = new List<Arrow>();
     private List<Arrow[]> arrowPairs = new List<Arrow[]>();
 
     private int currentPos;
 
-    public BeyondRepairing(KMBombInfo bomb)
+
+    private List<List<int>> GetAttribs(int oddOneOut, bool isIrrelevant)
     {
+
+        var attribs = new List<List<int>>();
+
+        for (int i = 0; i < 3; i++)
+        {
+            attribs.Add(new List<int>());
+
+            if (isIrrelevant ^ (i == oddOneOut))
+                for (int j = 0; j < 3; j++)
+                {
+                    var chosenAttrib = Enumerable.Range(0, 6 + (i % 2)).Where(x => !attribs[i].Contains(x)).PickRandom();
+                    for (int k = 0; k < 2; k++)
+                        attribs[i].Add(chosenAttrib);
+                }
+            else
+            {
+            tryagain:
+                attribs[i] = new List<int>();
+
+                for (int j = 0; j < 6; j++)
+                    attribs[i].Add(Range(0, 6 + (i % 2)));
+
+                var counts = new int[6 + (i % 2)];
+
+                foreach (var attrib in attribs[i])
+                    counts[attrib]++;
+
+                Array.Sort(counts);
+
+                var counter = 0;
+
+                var reference = new[] { 0, 0, 0, 0, 2, 2, 2 };
+
+                for (int j = (i + 1) % 2; j < reference.Length; j++)
+                    if (reference[i] == counts[j + (i % 2) - 1])
+                        counter++;
+
+                if (counter >= counts.Length)       
+                    goto tryagain;
+
+            }
+        }
+
+        return attribs;
+    }
+
+    public BeyondRepairing(int bat, int holder)
+    {
+        var attribs = GetAttribs(Range(0, 3), Range(0, 2) == 0);
+
+
         while (arrowPairs.Count < 3)
         {
             var arrowPair = new Arrow[2];
 
+            var dupes = attribs.Select(x => x[bat == holder ? 1 : bat > holder ? 0 : 2]).GroupBy(x => x).Where(x => x.Count() == 2).Select(x => x.Key).ToList();
+            var grabIxes = Enumerable.Range(0, 6).Where(attribs[bat == holder ? 1 : bat > holder ? 0 : 2].Contains).ToArray();
+
+            for (int i = 0; i < 2; i++)
+                arrowPair[i] = new Arrow(attribs[0][grabIxes[i]], arrowColors[attribs[1][grabIxes[i]]], attribs[2][grabIxes[i]], Range(0, 6));
+
+            arrowPairs.Add(arrowPair);
 
         }
+
+        arrowPairs.ForEach(GeneratedArrows.AddRange);
+
+        GeneratedArrows.Shuffle();
+    }
+
+    public char[] GetColors()
+    {
+        var colors = new char[3];
+
+        for (int i = 0; i < 3; i++)
+        {
+            currentPos = 3;
+
+            foreach (var arrow in arrowPairs[i])
+            {
+                var allHexPossibilities = hexDestinations[currentPos];
+                currentPos = allHexPossibilities[arrow.Direction];
+            }
+
+            colors[i] = hexGridColors[currentPos];
+        }
+
+        return colors;
     }
 
 }
