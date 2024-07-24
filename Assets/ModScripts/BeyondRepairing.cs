@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static UnityEngine.Random;
-using static UnityEngine.Debug;
 
 public class Arrow
 {
-    public int ArrowType { get; set; }
-    public Color32 Color { get; set; }
-    public int ArrowPattern { get; set; }
-    public int Direction { get; set; }
+    public int ArrowType { get; private set; }
+    public Color32 Color { get; private set; }
+    public int ArrowPattern { get; private set; }
+    public int Direction { get; private set; }
 
     public Arrow(int arrowType, Color32 color, int arrowPattern, int direction)
     {
