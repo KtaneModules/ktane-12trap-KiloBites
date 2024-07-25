@@ -31,26 +31,36 @@ public class TwelvetrapScript : MonoBehaviour
 	private Coroutine[] cycleCoroutines = new Coroutine[2];
 	private Coroutine arrowCycle;
 	private Color[] coloursForRends = new Color[] { Color.red, new Color(1, 1, 0, 1), Color.green, Color.cyan, Color.blue, Color.magenta, Color.white }; //Why the hell is Color.yellow not 1, 1, 0. It's ugly.
-	private List<int> colours;
+	private List<int> colours, solutionColors;
 	private float ledInitPos;
 	private int[] offLEDs = new int[2];
 	private bool cannotPress = true, moduleSolved, cbActive;
 
+
+	private HighLevelSecurity highLevelSec;
+	private SecOption selectedOption;
+
+	private PoisonPenLetter poisonPenLetter = new PoisonPenLetter();
+	private string[] poisonPenMessages;
+
 	private MyWorldIsBreaking puzzleGenerationGivesMeAStroke = new MyWorldIsBreaking();
+	private List<string[]> bombCoords;
+	private List<BombType[]> bombList;
+
 	private BeyondRepairing beyondRepairing;
 
 	private Sprite[][] arrowSprites;
 
 	private static readonly string[] colorNames = { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" };
 
-	private Sprite GetEmblemSprite(string name) => EmblemSprites.Where(x => x.name == name).First();
+	private Sprite GetEmblemSprite(string name) => EmblemSprites.First(x => x.name == name);
 
 	void Awake()
     {
 		moduleId = moduleIdCounter++;
 
 		ledPressAnimCoroutines = new Coroutine[LEDSelectables.Length];
-		ledInitPos = LEDSelectables[0].GetComponentsInChildren<MeshRenderer>().Where(x => x.name == "LED").First().transform.localPosition.y;
+		ledInitPos = LEDSelectables[0].GetComponentsInChildren<MeshRenderer>().First(x => x.name == "LED").transform.localPosition.y;
 
 		arrowSprites = new[] { ArrowA, ArrowB, ArrowC, ArrowD, ArrowE, ArrowF };
 
@@ -86,16 +96,16 @@ public class TwelvetrapScript : MonoBehaviour
 
 	void Calculate()
 	{
-		colours = Enumerable.Range(0, 12).Select(_ => Range(0, 7)).ToList();
 
 		// High-Level Security
 
 		// Poison-Pen Letter
 
-		//Log(poisonpenLetter.GenerateMessage().Join(", "));
-		//Log(poisonpenLetter.GenerateColors().Join(""));
+		colours = Enumerable.Range(0, 12).Select(_ => Range(0, 7)).ToList();
 
-		
+
+		var colorChars = colorNames.Select(x => x[0]).Join("");
+
         puzzleGenerationGivesMeAStroke.GeneratePuzzle(Bomb.GetBatteryCount());
 
         Log($"Before modification: {puzzleGenerationGivesMeAStroke}");
@@ -107,6 +117,10 @@ public class TwelvetrapScript : MonoBehaviour
 			Log($"Coordinates: {grabbedCoordinates[i].Join(", ")} Color: {grabbedBombTypes[i].Select(x => "BKR"[(int)x]).Join(", ")}");
 
 		beyondRepairing = new BeyondRepairing(Bomb.GetBatteryCount(), Bomb.GetBatteryHolderCount());
+
+		Log($"[12trap #{moduleId}] The arrows paired for Beyond Re-Pairing are: {beyondRepairing.LogPairs()}");
+		Log($"[12trap #{moduleId}] The arrows are displayed as follows: {beyondRepairing.LogDisplayed()}");
+		beyondRepairing.LogColors(moduleId);
 
 	}
 
@@ -271,8 +285,6 @@ public class TwelvetrapScript : MonoBehaviour
         }
         Emblem.transform.parent.localScale = Vector3.one;
         cannotPress = false;
-
-		arrowCycle = StartCoroutine(CycleArrows());
     }
 
 	IEnumerator CycleArrows()

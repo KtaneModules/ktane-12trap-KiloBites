@@ -10,9 +10,9 @@ public class SecOption
     public string Nationality { get; set; }
     public string FieldOfStudy { get; set; }
     public string Status { get; set; }
-    public Color[] Colors { get; set; }
+    public int[] Colors { get; set; }
 
-    public SecOption(string firstName, string nationality, string fieldOfStudy, string status, Color[] colors)
+    public SecOption(string firstName, string nationality, string fieldOfStudy, string status, int[] colors)
     {
         FirstName = firstName;
         Nationality = nationality;
@@ -83,12 +83,10 @@ public class HighLevelSecurity
             new[] { 2, 0, 4 }
     };
 
-    public HighLevelSecurity(Color[] colors)
+    public HighLevelSecurity()
     {
 
-        var colorSet = colorTypes.Select(x => x.Select(y => colors[y]).ToArray()).ToArray();
-
-        allSecTypes = Enumerable.Range(0, allTypes.Length).Select(x => new SecOption(allTypes[x][0], allTypes[x][1], allTypes[x][2], allTypes[x][3], colorSet[x])).ToArray();
+        allSecTypes = Enumerable.Range(0, allTypes.Length).Select(x => new SecOption(allTypes[x][0], allTypes[x][1], allTypes[x][2], allTypes[x][3], colorTypes[x])).ToArray();
     }
 
     public SecOption SelectSec()

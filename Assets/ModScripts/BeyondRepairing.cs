@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static UnityEngine.Random;
+using static UnityEngine.Debug;
 
 public class Arrow
 {
     public int ArrowType { get; private set; }
     public Color32 Color { get; private set; }
+    public string ColorName { get; private set; }
     public int ArrowPattern { get; private set; }
     public int Direction { get; private set; }
 
-    public Arrow(int arrowType, Color32 color, int arrowPattern, int direction)
+    public Arrow(int arrowType, Color32 color, string colorName, int arrowPattern, int direction)
     {
         ArrowType = arrowType;
         Color = color;
+        ColorName = colorName;
         ArrowPattern = arrowPattern;
         Direction = direction;
     }
@@ -158,7 +161,10 @@ public class BeyondRepairing
             var grabIxes = Enumerable.Range(0, 6).Where(x => attribs[chosenAttrib][x] == toBeGrouped[i]).ToArray();
 
             for (int j = 0; j < 2; j++)
-                arrowPair[j] = new Arrow(attribs[0][grabIxes[j]], arrowColors[attribs[1][grabIxes[j]]], attribs[2][grabIxes[j]], Range(0, 6));
+            {
+                arrowPair[j] = new Arrow(attribs[0][grabIxes[j]], arrowColors[attribs[1][grabIxes[j]]], new[] { "Red", "Yellow", "Magenta", "White", "Green", "Blue", "Cyan" }[attribs[1][grabIxes[j]]], attribs[2][grabIxes[j]], Range(0, 6));
+            }
+                
 
             arrowPairs.Add(arrowPair);
         }
@@ -185,4 +191,34 @@ public class BeyondRepairing
         return colors;
     }
 
+    private static readonly char[] shapeLetters = "ABCDEF".ToCharArray();
+    private static readonly string[] patternNames = { "Solid", "Striped", "Checkerboard", "Polka Dots", "Grid", "Flannel" };
+    private static readonly string[] dirNames = { "U", "UR", "DR", "D", "DL", "UL" };
+
+    public string LogPairs() => 
+        arrowPairs.Select(x => x.Select(y => $"[Shape: {shapeLetters[y.ArrowType]}, Color: {y.ColorName}, Pattern: {patternNames[y.ArrowPattern]}, Direction: {dirNames[y.Direction]}]").Join()).Join(", ");
+
+    public string LogDisplayed() =>
+        GeneratedArrows.Select(x => $"[Shape: {shapeLetters[x.ArrowType]}, Color: {x.ColorName}, Pattern: {patternNames[x.ArrowPattern]}, Direction: {dirNames[x.Direction]}]").Join(", ");
+
+    public void LogColors(int modId)
+    {
+        var colorNames = new[] { "Red", "Yellow", "Magenta", "White", "Green", "Blue", "Cyan" };
+
+        for (int i = 0; i < 3; i++)
+        {
+            Log($"[12trap #{modId}] Pair {i + 1}:");
+
+            var pos = 3;
+
+            foreach (var arrow in arrowPairs[i])
+            {
+                var oldPos = pos;
+                pos = hexDestinations[pos][arrow.Direction];
+                Log($"[12trap #{modId}] Currently at {colorNames[oldPos]}. Going {dirNames[arrow.Direction]} takes you to {colorNames[pos]}.");
+            }
+
+            Log($"[12trap #{modId}] The final color for that pair is: {colorNames[pos]}");
+        }
+    }
 }
