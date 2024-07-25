@@ -29,6 +29,7 @@ public class TwelvetrapScript : MonoBehaviour
 
 	private Coroutine[] ledPressAnimCoroutines;
 	private Coroutine[] cycleCoroutines = new Coroutine[2];
+	private Coroutine arrowCycle;
 	private Color[] coloursForRends = new Color[] { Color.red, new Color(1, 1, 0, 1), Color.green, Color.cyan, Color.blue, Color.magenta, Color.white }; //Why the hell is Color.yellow not 1, 1, 0. It's ugly.
 	private List<int> colours;
 	private float ledInitPos;
@@ -270,6 +271,8 @@ public class TwelvetrapScript : MonoBehaviour
         }
         Emblem.transform.parent.localScale = Vector3.one;
         cannotPress = false;
+
+		arrowCycle = StartCoroutine(CycleArrows());
     }
 
 	IEnumerator CycleArrows()
@@ -284,13 +287,13 @@ public class TwelvetrapScript : MonoBehaviour
 			{
 				Arrow.sprite = arrowSprites[getArrows[i].ArrowType][getArrows[i].ArrowPattern];
 				Arrow.color = getArrows[i].Color;
-				Arrow.transform.localEulerAngles = new Vector3(0, getArrows[i].GetDirRotation(), 0);
+				Arrow.transform.localEulerAngles = new Vector3(90, getArrows[i].GetDirRotation(), 0);
 
 				yield return new WaitForSeconds(1);
 			}
 
 			Arrow.enabled = false;
-			yield return new WaitForSeconds(1);
+			yield return new WaitForSeconds(1.5f);
 		}
     }
 

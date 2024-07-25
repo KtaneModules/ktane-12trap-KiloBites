@@ -126,21 +126,41 @@ public class BeyondRepairing
 
     public BeyondRepairing(int bat, int holder)
     {
-        var attribs = GetAttribs(Range(0, 3), Range(0, 2) == 0);
+        var ooo = Range(0, 3);
+        var isIrrelevant = Range(0, 2) == 0;
 
+        var attribs = GetAttribs(ooo, isIrrelevant);
 
-        while (arrowPairs.Count < 3)
+        int chosenAttrib = ooo;
+
+        if (isIrrelevant)
+        {
+            if (bat == holder)
+                chosenAttrib = ooo == 1 ? 0 : 1;
+
+            else if (bat > holder)
+                chosenAttrib = ooo == 0 ? 2 : 0;
+
+            else if (bat < holder)
+                chosenAttrib = ooo == 2 ? 1 : 2;
+        }
+
+        var toBeGrouped = new List<int>();
+
+        for (int i = 0; i < 5; i++)
+            if (!toBeGrouped.Contains(attribs[chosenAttrib][i]))
+                toBeGrouped.Add(attribs[chosenAttrib][i]);
+
+        for (int i = 0; i < 3; i++)
         {
             var arrowPair = new Arrow[2];
 
-            var dupes = attribs.Select(x => x[bat == holder ? 1 : bat > holder ? 0 : 2]).GroupBy(x => x).Where(x => x.Count() == 2).Select(x => x.Key).ToList();
-            var grabIxes = Enumerable.Range(0, 6).Where(attribs[bat == holder ? 1 : bat > holder ? 0 : 2].Contains).ToArray();
+            var grabIxes = Enumerable.Range(0, 6).Where(x => attribs[chosenAttrib][x] == toBeGrouped[i]).ToArray();
 
-            for (int i = 0; i < 2; i++)
-                arrowPair[i] = new Arrow(attribs[0][grabIxes[i]], arrowColors[attribs[1][grabIxes[i]]], attribs[2][grabIxes[i]], Range(0, 6));
+            for (int j = 0; j < 2; j++)
+                arrowPair[j] = new Arrow(attribs[0][grabIxes[j]], arrowColors[attribs[1][grabIxes[j]]], attribs[2][grabIxes[j]], Range(0, 6));
 
             arrowPairs.Add(arrowPair);
-
         }
 
         arrowPairs.ForEach(GeneratedArrows.AddRange);
@@ -157,10 +177,7 @@ public class BeyondRepairing
             currentPos = 3;
 
             foreach (var arrow in arrowPairs[i])
-            {
-                var allHexPossibilities = hexDestinations[currentPos];
-                currentPos = allHexPossibilities[arrow.Direction];
-            }
+                currentPos = hexDestinations[currentPos][arrow.Direction];
 
             colors[i] = hexGridColors[currentPos];
         }

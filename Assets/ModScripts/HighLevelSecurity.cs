@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static UnityEngine.Random;
@@ -100,7 +101,9 @@ public class HighLevelSecurity
 
         if (beIncorrect)
         {
-            var ixesToSelect = Enumerable.Range(0, 3).ToList().Shuffle().Take(2).OrderBy(x => x).ToArray();
+            var ixesToSelect = Enumerable.Range(0, 3).ToList().Shuffle().Take(2).ToArray();
+
+            Array.Sort(ixesToSelect);
 
             var doRandom = Enumerable.Range(0, 3).Select(ixesToSelect.Contains).ToArray();
 
