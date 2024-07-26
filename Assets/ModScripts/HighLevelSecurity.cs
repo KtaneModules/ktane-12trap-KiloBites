@@ -31,7 +31,7 @@ public class HighLevelSecurity
     {
             new[] { "Arbott", "Korea", "Fine Art", "DISPATCHED" },
             new[] { "Archer", "China", "Economics", "KILLED IN ACT." },
-            new[] { "Caleb", "U.S.A", "Education", "CANDIDATE" },
+            new[] { "Caleb", "U.S.A.", "Education", "CANDIDATE" },
             new[] { "Connie", "Greece", "Astronomy", "CANDIDATE" },
             new[] { "Daniel", "Armenia", "Medicine", "CANDIDATE" },
             new[] { "Dekashi", "Japan", "Music", "AVAILABLE" },

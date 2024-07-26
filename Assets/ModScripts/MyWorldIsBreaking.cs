@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static UnityEngine.Debug;
 
 public enum BombType
 {
@@ -203,8 +202,6 @@ public class MyWorldIsBreaking
 
         if (GeneratedBombs.Count != 9)
             goto tryagain;
-
-        Log($"After modification: {modifiedGrid.Select(x => x ? 'X' : '-').Join("")}");
 
         coordinates = selectedCoords.Select(GetRowColumn).ToArray();
         Colors = Enumerable.Range(0, 49).Where(x => modifiedGrid[x]).Select(x => colorGrid[x]).ToArray();

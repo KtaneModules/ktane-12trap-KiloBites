@@ -22,7 +22,7 @@ public class TwelvetrapScript : MonoBehaviour
     public SpriteRenderer HaloTemplate;
     public MeshRenderer[] LEDRends;
     public SpriteRenderer StarRend;
-    public SpriteRenderer LowerGlow;
+    public SpriteRenderer LowerGlow, UpperGlow;
 	public Material[] LEDMats;
 	public SpriteRenderer[] Glows;
 	public TextMesh[] CBTexts;
@@ -46,7 +46,7 @@ public class TwelvetrapScript : MonoBehaviour
 
 	private Coroutine[] ledPressAnimCoroutines;
 	private Coroutine[] cycleCoroutines = new Coroutine[2];
-	private Coroutine arrowCycle;
+	private Coroutine arrowCycle, solve;
 	private Color[] coloursForRends = new Color[] { Color.red, new Color(1, 1, 0, 1), Color.green, Color.cyan, Color.blue, Color.magenta, Color.white }; //Why the hell is Color.yellow not 1, 1, 0. It's ugly.
 	private List<int> colours, solutionColors, colorSwapIxes = new List<int>();
 	private float ledInitPos;
@@ -169,12 +169,13 @@ public class TwelvetrapScript : MonoBehaviour
 		solutionColors = combinedSet.ToList();
 		colours = solutionColors.ToList().Shuffle();
 
+		Log($"[12trap #{moduleId}] The solution in clockwise order from the topmost LED is: {solutionColors.Select(x => colorChars[x]).Select((x, i) => new { Index = i, Value = x }).GroupBy(x => x.Index / 3).Select(x => x.Select(v => v.Value).Join("")).Join(";")}");
 	}
 
 
     void LEDPress(KMSelectable led)
 	{
-		if (moduleSolved || cannotPress)
+		if (moduleSolved || cannotPress || solve != null)
 			return;
 
 		var ix = Array.IndexOf(LEDSelectables, led);
@@ -196,7 +197,7 @@ public class TwelvetrapScript : MonoBehaviour
 
 			if (colorSwapIxes.Count == 2)
 			{
-				Audio.PlaySoundAtTransform("accept", transform);
+				
 
                 var temp = colours[colorSwapIxes[1]];
                 var currentIx = colours[colorSwapIxes[0]];
@@ -220,6 +221,18 @@ public class TwelvetrapScript : MonoBehaviour
                     StopCoroutine(arrowCycle);
                     arrowCycle = null;
                 }
+
+				if (colours.SequenceEqual(solutionColors))
+				{
+					foreach (var cycle in cycleCoroutines)
+						StopCoroutine(cycle);
+
+					solve = StartCoroutine(SolveAnimation());
+
+					return;
+				}
+
+                Audio.PlaySoundAtTransform("accept", transform);
 
                 return;
             }
@@ -330,6 +343,40 @@ public class TwelvetrapScript : MonoBehaviour
 		}
 	}
 
+	IEnumerator SolveAnimation()
+	{
+		Audio.PlaySoundAtTransform("Solve", transform);
+
+		var solveA = StartCoroutine(SolveA());
+
+		yield return new WaitForSeconds(9);
+
+		StopCoroutine(solveA);
+		Emblem.enabled = false;
+
+		for (int i = 0; i < 12; i++)
+			UnlightLED(i);
+	}
+
+	IEnumerator SolveA()
+	{
+		var speed = 0.25f;
+
+		while (true)
+		{
+			colours = Enumerable.Range(0, 12).Select(_ => Range(0, 7)).ToList();
+			AssignLEDsNoUnlit();
+			yield return new WaitForSeconds(speed);
+
+			if (speed == 0.05f)
+				continue;
+
+			speed -= 0.005f;
+		}
+	}
+
+
+
 	void LightLED(int pos, Color colour)
 	{
         LEDRends[pos].material = LEDMats[1];
@@ -357,6 +404,15 @@ public class TwelvetrapScript : MonoBehaviour
         }
 			
     }
+
+	void AssignLEDsNoUnlit()
+	{
+		for (int i = 0; i < LEDRends.Length; i++)
+		{
+			CBTexts[i].text = string.Empty;
+			LightLED(i, coloursForRends[colours[i]]);
+		}
+	}
 
 	void CycleLEDs() //float cycleOneInterval = 2.5f /* 30 / 12f */, float cycleTwoInterval = 1f /* 12 / 12f */
     {

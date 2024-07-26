@@ -204,7 +204,7 @@ Prefab:
     - target: {fileID: 114848120511536268, guid: 8814ea52310d2614a9feda02ec355ae4,
         type: 2}
       propertyPath: AudioClips.Array.size
-      value: 6
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 439642, guid: 8814ea52310d2614a9feda02ec355ae4, type: 2}
       propertyPath: m_LocalPosition.x
@@ -268,9 +268,19 @@ Prefab:
       propertyPath: AudioClips.Array.data[5]
       value: 
       objectReference: {fileID: 8300000, guid: a5406a7783f7ddb4984377283d53f746, type: 3}
+    - target: {fileID: 114848120511536268, guid: 8814ea52310d2614a9feda02ec355ae4,
+        type: 2}
+      propertyPath: AudioClips.Array.data[6]
+      value: 
+      objectReference: {fileID: 8300000, guid: d26d0b0dc2d28904e945556b7de056e8, type: 3}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 8814ea52310d2614a9feda02ec355ae4, type: 2}
   m_IsPrefabParent: 0
+--- !u!212 &424157419 stripped
+SpriteRenderer:
+  m_PrefabParentObject: {fileID: 212097407847992764, guid: d17dbae31d265bb48be96785547d7c84,
+    type: 2}
+  m_PrefabInternal: {fileID: 1732163601}
 --- !u!1 &580198653
 GameObject:
   m_ObjectHideFlags: 0
@@ -375,6 +385,20 @@ Prefab:
       propertyPath: m_RootOrder
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 114784357693023840, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: _colorblindMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1055114619871316, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114339242507378786, guid: d17dbae31d265bb48be96785547d7c84,
+        type: 2}
+      propertyPath: UpperGlow
+      value: 
+      objectReference: {fileID: 424157419}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: d17dbae31d265bb48be96785547d7c84, type: 2}
   m_IsPrefabParent: 0
