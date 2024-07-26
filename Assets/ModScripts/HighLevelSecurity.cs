@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using static UnityEngine.Random;
 
 public class SecOption
@@ -58,29 +57,30 @@ public class HighLevelSecurity
 
     private static readonly int[][] colorTypes =
     {
-            new[] { 3, 4, 3 },
-            new[] { 6, 6, 1 },
-            Enumerable.Range(0, 3).Reverse().ToArray(),
-            new[] { 1, 5, 0 },
-            new[] { 4, 5, 4 },
-            new[] { 1, 4, 4 },
-            new[] { 3, 1, 2 },
-            new[] { 1, 1, 0 },
-            new[] { 5, 0, 0 },
-            new[] { 1, 0, 3 },
-            new[] { 2, 2, 5 },
-            new[] { 4, 0, 1 },
-            new[] { 5, 5, 3 },
-            new[] { 5, 2, 6 },
-            new[] { 6, 2, 6 },
-            new[] { 4, 0, 6 },
-            new[] { 1, 4, 5 },
-            Enumerable.Repeat(0, 3).ToArray(),
-            new[] { 0, 1, 6 },
-            new[] { 3, 6, 5 },
-            new[] { 4, 4, 2 },
-            new[] { 5, 1, 4 },
-            new[] { 2, 0, 4 }
+        new[] { 3, 4, 3 },
+        new[] { 6, 6, 1 },
+        Enumerable.Range(0, 3).Reverse().ToArray(),
+        new[] { 1, 5, 0 },
+        new[] { 4, 6, 1 },
+        new[] { 4, 5, 4 },
+        new[] { 1, 4, 4 },
+        new[] { 3, 1, 2 },
+        new[] { 1, 1, 0 },
+        new[] { 5, 0, 0 },
+        new[] { 1, 0, 3 },
+        new[] { 2, 2, 5 },
+        new[] { 4, 0, 1 },
+        new[] { 5, 5, 3 },
+        new[] { 5, 2, 6 },
+        new[] { 6, 2, 6 },
+        new[] { 4, 0, 6 },
+        new[] { 1, 4, 5 },
+        Enumerable.Repeat(0, 3).ToArray(),
+        new[] { 0, 1, 6 },
+        new[] { 3, 6, 5 },
+        new[] { 4, 4, 2 },
+        new[] { 5, 1, 4 },
+        new[] { 2, 0, 4 }
     };
 
     public HighLevelSecurity()
@@ -99,9 +99,7 @@ public class HighLevelSecurity
 
         if (beIncorrect)
         {
-            var ixesToSelect = Enumerable.Range(0, 3).ToList().Shuffle().Take(2).ToArray();
-
-            Array.Sort(ixesToSelect);
+            var ixesToSelect = Enumerable.Range(0, 3).ToList().Shuffle().Take(2).OrderBy(x => x).ToArray();
 
             var doRandom = Enumerable.Range(0, 3).Select(ixesToSelect.Contains).ToArray();
 

@@ -26,26 +26,41 @@ public class TwelvetrapScript : MonoBehaviour
 	public Material[] LEDMats;
 	public SpriteRenderer[] Glows;
 	public TextMesh[] CBTexts;
+	public TextMesh ArrowCB;
+
+	public GameObject[] Menus;
+
+	// High Level Sec stuff
+
+	public TextMesh[] SecTexts;
+	public SpriteRenderer FlagRender;
+	public Sprite[] Flags;
+
+	// Poison-Pen Letter stuff
+
+	public TextMesh PoisonPenOrdinal;
+
+	// My World Is Breaking stuff
+
+	public TextMesh[] WorldBreakingCoords;
 
 	private Coroutine[] ledPressAnimCoroutines;
 	private Coroutine[] cycleCoroutines = new Coroutine[2];
 	private Coroutine arrowCycle;
 	private Color[] coloursForRends = new Color[] { Color.red, new Color(1, 1, 0, 1), Color.green, Color.cyan, Color.blue, Color.magenta, Color.white }; //Why the hell is Color.yellow not 1, 1, 0. It's ugly.
-	private List<int> colours, solutionColors;
+	private List<int> colours, solutionColors, colorSwapIxes = new List<int>();
 	private float ledInitPos;
 	private int[] offLEDs = new int[2];
 	private bool cannotPress = true, moduleSolved, cbActive;
 
 
-	private HighLevelSecurity highLevelSec;
+	private HighLevelSecurity highLevelSec = new HighLevelSecurity();
 	private SecOption selectedOption;
 
 	private PoisonPenLetter poisonPenLetter = new PoisonPenLetter();
 	private string[] poisonPenMessages;
 
 	private MyWorldIsBreaking puzzleGenerationGivesMeAStroke = new MyWorldIsBreaking();
-	private List<string[]> bombCoords;
-	private List<BombType[]> bombList;
 
 	private BeyondRepairing beyondRepairing;
 
@@ -97,30 +112,62 @@ public class TwelvetrapScript : MonoBehaviour
 	void Calculate()
 	{
 
-		// High-Level Security
+        var colorChars = colorNames.Select(x => x[0]).Join("");
+
+		var sections = new[] { new[] { 11, 0, 1 }, new[] { 2, 3, 4 }, new[] { 5, 6, 7 }, new[] { 8, 9, 10 } };
+
+        // High-Level Security
+
+
+        selectedOption = highLevelSec.SelectSec();
+		var secColors = selectedOption.Colors;
 
 		// Poison-Pen Letter
 
-		colours = Enumerable.Range(0, 12).Select(_ => Range(0, 7)).ToList();
+		poisonPenMessages = poisonPenLetter.GenerateMessage();
 
+		var poisonColors = poisonPenLetter.GenerateColors().Select(x => colorChars.IndexOf(x)).ToArray();
 
-		var colorChars = colorNames.Select(x => x[0]).Join("");
+		// My World Is Breaking
 
         puzzleGenerationGivesMeAStroke.GeneratePuzzle(Bomb.GetBatteryCount());
 
-        Log($"Before modification: {puzzleGenerationGivesMeAStroke}");
+		var worldBreakingColors = puzzleGenerationGivesMeAStroke.Colors.Select(x => colorChars.IndexOf(x)).ToArray();
 
-        var grabbedCoordinates = puzzleGenerationGivesMeAStroke.CoordinateGroups;
-		var grabbedBombTypes = puzzleGenerationGivesMeAStroke.BombTypeGroups;
-
-		for (int i = 0; i < grabbedCoordinates.Count; i++)
-			Log($"Coordinates: {grabbedCoordinates[i].Join(", ")} Color: {grabbedBombTypes[i].Select(x => "BKR"[(int)x]).Join(", ")}");
+		// Beyond Re-Pairing
 
 		beyondRepairing = new BeyondRepairing(Bomb.GetBatteryCount(), Bomb.GetBatteryHolderCount());
 
 		Log($"[12trap #{moduleId}] The arrows paired for Beyond Re-Pairing are: {beyondRepairing.LogPairs()}");
 		Log($"[12trap #{moduleId}] The arrows are displayed as follows: {beyondRepairing.LogDisplayed()}");
 		beyondRepairing.LogColors(moduleId);
+
+		var beyondRepairingColors = beyondRepairing.GetColors().Select(x => colorChars.IndexOf(x)).ToArray();
+
+		var combinedSet = new int[12];
+
+		for (int i = 0; i < 4; i++)
+			for (int j = 0; j < 3; j++)
+			{
+				switch (i)
+				{
+					case 0:
+						combinedSet[sections[i][j]] = secColors[j];
+						break;
+					case 1:
+						combinedSet[sections[i][j]] = poisonColors[j];
+						break;
+					case 2:
+						combinedSet[sections[i][j]] = worldBreakingColors[j];
+						break;
+					case 3:
+						combinedSet[sections[i][j]] = beyondRepairingColors[j];
+						break;
+				}
+			}
+
+		solutionColors = combinedSet.ToList();
+		colours = solutionColors.ToList().Shuffle();
 
 	}
 
@@ -135,7 +182,153 @@ public class TwelvetrapScript : MonoBehaviour
 		if (ledPressAnimCoroutines[ix] != null)
 			StopCoroutine(ledPressAnimCoroutines[ix]);
 		ledPressAnimCoroutines[ix] = StartCoroutine(LEDPressAnim(ix));
+
+		if (LEDRends[ix].material.color == Color.clear)
+		{
+			Log($"[12trap #{moduleId}] You tried to press an LED while it is off. Strike!");
+			Module.HandleStrike();
+			return;
+		}
+
+		if (!colorSwapIxes.Contains(ix))
+		{
+            colorSwapIxes.Add(ix);
+
+			if (colorSwapIxes.Count == 2)
+			{
+				Audio.PlaySoundAtTransform("accept", transform);
+
+                var temp = colours[colorSwapIxes[1]];
+                var currentIx = colours[colorSwapIxes[0]];
+
+                colours[colorSwapIxes[0]] = temp;
+                colours[colorSwapIxes[1]] = currentIx;
+
+				Log($"[12trap #{moduleId}] {colorSwapIxes[0] + 1} and {colorSwapIxes[1] + 1} have been swapped.");
+
+                colorSwapIxes.Clear();
+
+				AssignLEDs();
+
+                foreach (var obj in Menus)
+                    obj.SetActive(false);
+
+                Emblem.enabled = true;
+
+                if (arrowCycle != null)
+                {
+                    StopCoroutine(arrowCycle);
+                    arrowCycle = null;
+                }
+
+                return;
+            }
+        }	
+		else if (colorSwapIxes.Contains(ix) && colorSwapIxes.Count != 2)
+		{
+            colorSwapIxes.Clear();
+
+			foreach (var obj in Menus)
+				obj.SetActive(false);
+
+			Emblem.enabled = true;
+
+			if (arrowCycle != null)
+			{
+                StopCoroutine(arrowCycle);
+                arrowCycle = null;
+            }
+
+			return;
+        }
+			
+
+		switch (ix)
+		{
+			case 11:
+			case 0:
+			case 1:
+				DisplayThings(0);
+				break;
+			case 2:
+			case 3:
+			case 4:
+				var getOrdinalIx = new Dictionary<int, int>
+				{
+					{ 2, 0 },
+					{ 3, 1 },
+					{ 4, 2 }
+				};
+				DisplayThings(1, getOrdinalIx[ix]);
+				break;
+			case 5:
+			case 6:
+			case 7:
+				var getCoordinateIx = new Dictionary<int, int>
+				{
+					{ 5, 0 },
+					{ 6, 1 },
+					{ 7, 2 }
+				};
+				DisplayThings(2, getCoordinateIx[ix]);
+				break;
+			case 8:
+			case 9:
+			case 10:
+				if (arrowCycle != null)
+					return;
+
+				DisplayThings(3);
+				break;
+
+		}
+
     }
+
+	void DisplayThings(int ix, int? groupIx = null)
+	{
+		Emblem.enabled = false;
+
+		foreach (var obj in Menus)
+			obj.SetActive(false);
+
+		if (arrowCycle != null)
+		{
+			StopCoroutine(arrowCycle);
+			arrowCycle = null;
+		}
+
+		Menus[ix].SetActive(true);
+
+		switch (ix)
+		{
+			case 0:
+				var flagNames = new[] { "Armenia", "China", "Greece", "Japan", "Korea", "Thailand", "U.K.", "U.S.A." };
+				SecTexts[0].text = selectedOption.FirstName;
+				SecTexts[1].text = selectedOption.FieldOfStudy;
+				FlagRender.sprite = Flags[Array.IndexOf(flagNames, selectedOption.Nationality)];
+				break;
+			case 1:
+				PoisonPenOrdinal.text = poisonPenMessages[groupIx.Value];
+				break;
+			case 2:
+				var coordinateGroups = puzzleGenerationGivesMeAStroke.CoordinateGroups[groupIx.Value];
+				var bombTypeGroups = puzzleGenerationGivesMeAStroke.BombTypeGroups[groupIx.Value];
+				var colorGroup = new[] { new Color32(0, 0, 255, 200), new Color32(0, 0, 0, 200), new Color32(255, 0, 0, 200) };
+				var colorChars = "B R".ToCharArray();
+
+				for (int i = 0; i < 3; i++)
+				{
+					WorldBreakingCoords[i].text = cbActive ? coordinateGroups[i] + colorChars[(int)bombTypeGroups[i]] : coordinateGroups[i];
+					WorldBreakingCoords[i].color = colorGroup[(int)bombTypeGroups[i]];
+				}
+				break;
+			case 3:
+				arrowCycle = StartCoroutine(CycleArrows());
+				break;
+
+		}
+	}
 
 	void LightLED(int pos, Color colour)
 	{
@@ -300,11 +493,14 @@ public class TwelvetrapScript : MonoBehaviour
 				Arrow.sprite = arrowSprites[getArrows[i].ArrowType][getArrows[i].ArrowPattern];
 				Arrow.color = getArrows[i].Color;
 				Arrow.transform.localEulerAngles = new Vector3(90, getArrows[i].GetDirRotation(), 0);
+				ArrowCB.text = cbActive && getArrows[i].ColorName != "White" ? getArrows[i].ColorName : string.Empty;
 
 				yield return new WaitForSeconds(1);
 			}
 
 			Arrow.enabled = false;
+			ArrowCB.text = string.Empty;
+
 			yield return new WaitForSeconds(1.5f);
 		}
     }

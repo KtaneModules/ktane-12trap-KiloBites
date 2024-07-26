@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 public class PoisonPenLetter
 {
@@ -53,6 +54,9 @@ public class PoisonPenLetter
                 "CJQX".Contains(letters[i]) ? 'G' :
                 "ELS".Contains(letters[i]) ? 'C' :
                 "WPIB".Contains(letters[i]) ? 'B' : '?';
+
+        if (colors.Any(x => x == '?'))
+            throw new Exception($"Invalid letters are found: {colors.Join(", ")}");
 
         return Enumerable.Range(0, 3).OrderBy(x => positions[x]).Select(x => colors[x]).ToArray();
     }

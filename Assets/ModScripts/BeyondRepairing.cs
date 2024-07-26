@@ -162,7 +162,7 @@ public class BeyondRepairing
 
             for (int j = 0; j < 2; j++)
             {
-                arrowPair[j] = new Arrow(attribs[0][grabIxes[j]], arrowColors[attribs[1][grabIxes[j]]], new[] { "Red", "Yellow", "Magenta", "White", "Green", "Blue", "Cyan" }[attribs[1][grabIxes[j]]], attribs[2][grabIxes[j]], Range(0, 6));
+                arrowPair[j] = new Arrow(attribs[0][grabIxes[j]], arrowColors[attribs[1][grabIxes[j]]], new[] { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" }[attribs[1][grabIxes[j]]], attribs[2][grabIxes[j]], Range(0, 6));
             }
                 
 
