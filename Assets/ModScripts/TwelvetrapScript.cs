@@ -47,7 +47,8 @@ public class TwelvetrapScript : MonoBehaviour
 	private Coroutine[] ledPressAnimCoroutines;
 	private Coroutine[] cycleCoroutines = new Coroutine[2];
 	private Coroutine arrowCycle, solve;
-	private Color[] coloursForRends = new Color[] { Color.red, new Color(1, 1, 0, 1), Color.green, Color.cyan, Color.blue, Color.magenta, Color.white }; //Why the hell is Color.yellow not 1, 1, 0. It's ugly.
+	private List<Color> haloCycle = new List<Color>();
+	private static readonly Color[] coloursForRends = new Color[] { new Color(1f, 0.35f, 0.35f), new Color(1f, 1f, 0.35f), new Color(0.35f, 1f, 0.35f), new Color(0.35f, 1f, 1f), new Color(0.35f, 0.35f, 1f), new Color(1f, 0.35f, 1f), Color.white };
 	private List<int> colours, solutionColors, colorSwapIxes = new List<int>();
 	private float ledInitPos;
 	private int[] offLEDs = new int[2];
@@ -96,7 +97,9 @@ public class TwelvetrapScript : MonoBehaviour
 			UnlightLED(i);
 
 		cbActive = Colorblind.ColorblindModeActive;
-		
+
+		for (int i = 0; i < 3; i++)
+			haloCycle.Add(Color.white);
     }
 
 	
@@ -320,20 +323,24 @@ public class TwelvetrapScript : MonoBehaviour
 				SecTexts[0].text = selectedOption.FirstName;
 				SecTexts[1].text = selectedOption.FieldOfStudy;
 				FlagRender.sprite = Flags[Array.IndexOf(flagNames, selectedOption.Nationality)];
-				break;
+                for (int i = 0; i < 3; i++)
+                    haloCycle[i] = coloursForRends[6];
+                break;
 			case 1:
 				PoisonPenOrdinal.text = poisonPenMessages[groupIx.Value];
-				break;
+                for (int i = 0; i < 3; i++)
+                    haloCycle[i] = coloursForRends[6];
+                break;
 			case 2:
 				var coordinateGroups = puzzleGenerationGivesMeAStroke.CoordinateGroups[groupIx.Value];
 				var bombTypeGroups = puzzleGenerationGivesMeAStroke.BombTypeGroups[groupIx.Value];
-				var colorGroup = new[] { new Color32(0, 0, 255, 200), new Color32(0, 0, 0, 200), new Color32(255, 0, 0, 200) };
+				var colorGroup = new[] { coloursForRends[4], coloursForRends[6], coloursForRends[0]};
 				var colorChars = "B R".ToCharArray();
 
 				for (int i = 0; i < 3; i++)
 				{
 					WorldBreakingCoords[i].text = cbActive ? coordinateGroups[i] + colorChars[(int)bombTypeGroups[i]] : coordinateGroups[i];
-					WorldBreakingCoords[i].color = colorGroup[(int)bombTypeGroups[i]];
+					WorldBreakingCoords[i].color = haloCycle[i] = colorGroup[(int)bombTypeGroups[i]];
 				}
 				break;
 			case 3:
@@ -547,17 +554,21 @@ public class TwelvetrapScript : MonoBehaviour
 			for (int i = 0; i < 6; i++)
 			{
 				Arrow.sprite = arrowSprites[getArrows[i].ArrowType][getArrows[i].ArrowPattern];
-				Arrow.color = getArrows[i].Color;
+                for (int j = 0; j < 3; j++)
+                    haloCycle[j] = getArrows[i].Color;
+                Arrow.color = getArrows[i].Color;
 				Arrow.transform.localEulerAngles = new Vector3(90, getArrows[i].GetDirRotation(), 0);
 				ArrowCB.text = cbActive && getArrows[i].ColorName != "White" ? getArrows[i].ColorName : string.Empty;
 
-				yield return new WaitForSeconds(1);
+                yield return new WaitForSeconds(1);
 			}
 
 			Arrow.enabled = false;
 			ArrowCB.text = string.Empty;
+            for (int i = 0; i < 3; i++)
+                haloCycle[i] = coloursForRends[6];
 
-			yield return new WaitForSeconds(1.5f);
+            yield return new WaitForSeconds(1.5f);
 		}
     }
 
@@ -599,9 +610,11 @@ public class TwelvetrapScript : MonoBehaviour
 
 	private IEnumerator SpawnHalos(float spawnRate = 2/3f)
 	{
+		int i = 0;
 		while (true)
 		{
-			StartCoroutine(FollowHalo());
+			StartCoroutine(FollowHalo(i));
+			i = (i + 1) % 3;
 			float timer = 0;
 			while (timer < spawnRate)
 			{
@@ -611,11 +624,12 @@ public class TwelvetrapScript : MonoBehaviour
 		}
 	}
 
-    private IEnumerator FollowHalo(float lifeLength = 2f, float maxAlpha = 0.25f)
+    private IEnumerator FollowHalo(int ix, float lifeLength = 2f, float maxAlpha = 0.25f)
     {
 		var halo = Instantiate(HaloTemplate, HaloTemplate.transform.parent);
 		halo.transform.localPosition = HaloTemplate.transform.localPosition;
 		halo.transform.localScale = Vector3.zero;
+		halo.color = haloCycle[ix];
 		halo.gameObject.SetActive(true);
 
 		var posFrom = halo.transform.localPosition.y;
@@ -628,7 +642,7 @@ public class TwelvetrapScript : MonoBehaviour
 			timer += Time.deltaTime;
 			halo.transform.localPosition = new Vector3(halo.transform.localPosition.x, Mathf.Lerp(posFrom, posTo, timer / lifeLength), halo.transform.localPosition.z);
 			halo.transform.localScale = Vector3.one * Mathf.Lerp(0, HaloTemplate.transform.localScale.x, timer / lifeLength);
-			halo.color = new Color(1, 1, 1, Mathf.PingPong(Mathf.Lerp(0, 2, timer / lifeLength), 1) * maxAlpha);
+			halo.color = new Color(haloCycle[ix].r, haloCycle[ix].g, haloCycle[ix].b, Mathf.PingPong(Mathf.Lerp(0, 2, timer / lifeLength), 1) * maxAlpha);
         }
 		Destroy(halo.gameObject);
     }
