@@ -135,6 +135,7 @@ public class TwelvetrapScript : MonoBehaviour
 
         puzzleGenerationGivesMeAStroke.GeneratePuzzle(Bomb.GetBatteryCount());
 
+
 		var worldBreakingColors = puzzleGenerationGivesMeAStroke.Colors.Select(x => colorChars.IndexOf(x)).ToArray();
 
 		// Beyond Re-Pairing
@@ -219,6 +220,8 @@ public class TwelvetrapScript : MonoBehaviour
 
                 Emblem.enabled = true;
 
+				haloCycle = Enumerable.Repeat(coloursForRends[6], 3).ToList();
+
                 if (arrowCycle != null)
                 {
                     StopCoroutine(arrowCycle);
@@ -248,8 +251,9 @@ public class TwelvetrapScript : MonoBehaviour
 				obj.SetActive(false);
 
 			Emblem.enabled = true;
+            haloCycle = Enumerable.Repeat(coloursForRends[6], 3).ToList();
 
-			if (arrowCycle != null)
+            if (arrowCycle != null)
 			{
                 StopCoroutine(arrowCycle);
                 arrowCycle = null;
@@ -554,8 +558,8 @@ public class TwelvetrapScript : MonoBehaviour
 			for (int i = 0; i < 6; i++)
 			{
 				Arrow.sprite = arrowSprites[getArrows[i].ArrowType][getArrows[i].ArrowPattern];
-                for (int j = 0; j < 3; j++)
-                    haloCycle[j] = getArrows[i].Color;
+
+				haloCycle = Enumerable.Repeat((Color)getArrows[i].Color, 3).ToList();
                 Arrow.color = getArrows[i].Color;
 				Arrow.transform.localEulerAngles = new Vector3(90, getArrows[i].GetDirRotation(), 0);
 				ArrowCB.text = cbActive && getArrows[i].ColorName != "White" ? getArrows[i].ColorName : string.Empty;
@@ -565,8 +569,8 @@ public class TwelvetrapScript : MonoBehaviour
 
 			Arrow.enabled = false;
 			ArrowCB.text = string.Empty;
-            for (int i = 0; i < 3; i++)
-                haloCycle[i] = coloursForRends[6];
+
+			haloCycle = Enumerable.Repeat(coloursForRends[6], 3).ToList();
 
             yield return new WaitForSeconds(1.5f);
 		}

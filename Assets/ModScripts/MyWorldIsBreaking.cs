@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using static UnityEngine.Random;
 
 public enum BombType
 {
@@ -147,25 +148,31 @@ public class MyWorldIsBreaking
 
         grid = GrabGrid(bat);
 
+        int dynamiteCount = Range(1, 4);
+
     tryagain:
         GeneratedBombs.Clear();
         selectedCoords.Clear();
         Bomb generatedBomb = null;
         int coord = 0;
         BombType bomb;
+        
 
         var modifiedGrid = grid.ToArray();
 
         do
         {
+            if (9 - GeneratedBombs.Count < modifiedGrid.Count(x => x) - 3 && 9 - GeneratedBombs.Count <= dynamiteCount)
+                goto tryagain;
+
+
             coord = Enumerable.Range(0, 49).Where(x => !selectedCoords.Contains(x)).PickRandom();
 
-
-            if (modifiedGrid.Count(x => x) - 3 <= 9 - GeneratedBombs.Count)
-                bomb = (BombType)Enumerable.Range(0, 3).PickRandom();
-            else if (modifiedGrid.Count(x => x) - 3 <= (9 - GeneratedBombs.Count) * 5)
+            if (9 - GeneratedBombs.Count <= dynamiteCount)
+                bomb = BombType.Dynamite;
+            else if (modifiedGrid.Count(x => x) - 3 - dynamiteCount <= (9 - GeneratedBombs.Count) * 5)
                 bomb = (BombType)Enumerable.Range(0, 3).Where(x => x != 0).PickRandom();
-            else if (modifiedGrid.Count(x => x) - 3 <= (9 - GeneratedBombs.Count) * 13)
+            else if (modifiedGrid.Count(x => x) - 3 - dynamiteCount <= (9 - GeneratedBombs.Count) * 13)
                 bomb = BombType.Bomb;
             else
                 goto tryagain;
@@ -205,6 +212,7 @@ public class MyWorldIsBreaking
 
         coordinates = selectedCoords.Select(GetRowColumn).ToArray();
         Colors = Enumerable.Range(0, 49).Where(x => modifiedGrid[x]).Select(x => colorGrid[x]).ToArray();
+        GeneratedBombs.Shuffle();
         CoordinateGroups = coordinates.Select((x, i) => new { Index = i, Value = x }).GroupBy(x => x.Index / 3).Select(x => x.Select(v => v.Value).ToArray()).ToList();
         BombTypeGroups = GeneratedBombs.Select(x => x.BombType).Select((x, i) => new { Index = i, Value = x }).GroupBy(x => x.Index / 3).Select(x => x.Select(v => v.Value).ToArray()).ToList();
     }
