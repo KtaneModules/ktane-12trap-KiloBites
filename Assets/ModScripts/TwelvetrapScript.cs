@@ -47,7 +47,7 @@ public class TwelvetrapScript : MonoBehaviour
 	private Coroutine[] ledPressAnimCoroutines;
 	private Coroutine[] cycleCoroutines = new Coroutine[2];
 	private Coroutine arrowCycle, solve;
-	private List<Color> haloCycle = new List<Color>();
+	private List<Color> haloCycle;
 	private static readonly Color[] coloursForRends = new Color[] { new Color(1f, 0.35f, 0.35f), new Color(1f, 1f, 0.35f), new Color(0.35f, 1f, 0.35f), new Color(0.35f, 1f, 1f), new Color(0.35f, 0.35f, 1f), new Color(1f, 0.35f, 1f), Color.white };
 	private List<int> colours, solutionColors, colorSwapIxes = new List<int>();
 	private float ledInitPos;
@@ -98,8 +98,7 @@ public class TwelvetrapScript : MonoBehaviour
 
 		cbActive = Colorblind.ColorblindModeActive;
 
-		for (int i = 0; i < 3; i++)
-			haloCycle.Add(Color.white);
+		haloCycle = Enumerable.Repeat(Color.white, 3).ToList();
     }
 
 	
@@ -327,13 +326,11 @@ public class TwelvetrapScript : MonoBehaviour
 				SecTexts[0].text = selectedOption.FirstName;
 				SecTexts[1].text = selectedOption.FieldOfStudy;
 				FlagRender.sprite = Flags[Array.IndexOf(flagNames, selectedOption.Nationality)];
-                for (int i = 0; i < 3; i++)
-                    haloCycle[i] = coloursForRends[6];
+				haloCycle = Enumerable.Repeat(coloursForRends[6], 3).ToList();
                 break;
 			case 1:
 				PoisonPenOrdinal.text = poisonPenMessages[groupIx.Value];
-                for (int i = 0; i < 3; i++)
-                    haloCycle[i] = coloursForRends[6];
+				haloCycle = Enumerable.Repeat(coloursForRends[6], 3).ToList();
                 break;
 			case 2:
 				var coordinateGroups = puzzleGenerationGivesMeAStroke.CoordinateGroups[groupIx.Value];
