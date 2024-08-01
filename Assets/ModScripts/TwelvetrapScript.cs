@@ -9,24 +9,25 @@ using static UnityEngine.Debug;
 
 public class TwelvetrapScript : MonoBehaviour
 {
-    static int moduleIdCounter = 1;
-    int moduleId;
+	static int moduleIdCounter = 1;
+	int moduleId;
 
-    public KMBombInfo Bomb;
+	public KMBombInfo Bomb;
 	public KMAudio Audio;
 	public KMBombModule Module;
 	public KMColorblindMode Colorblind;
-    public KMSelectable[] LEDSelectables;
-    public SpriteRenderer Emblem, Arrow;
+	public KMSelectable[] LEDSelectables;
+	public SpriteRenderer Emblem, Arrow;
 	public Sprite[] EmblemSprites, ArrowA, ArrowB, ArrowC, ArrowD, ArrowE, ArrowF;
-    public SpriteRenderer HaloTemplate;
-    public MeshRenderer[] LEDRends;
-    public SpriteRenderer StarRend;
-    public SpriteRenderer LowerGlow, UpperGlow;
+	public SpriteRenderer HaloTemplate;
+	public MeshRenderer[] LEDRends;
+	public SpriteRenderer StarRend;
+	public SpriteRenderer LowerGlow, UpperGlow;
 	public Material[] LEDMats;
 	public SpriteRenderer[] Glows;
 	public TextMesh[] CBTexts;
 	public TextMesh ArrowCB;
+	public SpriteRenderer ReticleTemplate;
 
 	public GameObject[] Menus;
 
@@ -44,10 +45,11 @@ public class TwelvetrapScript : MonoBehaviour
 
 	public TextMesh[] WorldBreakingCoords;
 
+	private Coroutine[] reticleCoroutines;
 	private Coroutine[] ledPressAnimCoroutines;
 	private Coroutine[] cycleCoroutines = new Coroutine[2];
-	private Coroutine arrowCycle, solve;
-	private List<Color> haloCycle;
+    private Coroutine arrowCycle, reticleAnim, solve;
+    private List<Color> haloCycle;
 	private static readonly Color[] coloursForRends = new Color[] { new Color(1f, 0.35f, 0.35f), new Color(1f, 1f, 0.35f), new Color(0.35f, 1f, 0.35f), new Color(0.35f, 1f, 1f), new Color(0.35f, 0.35f, 1f), new Color(1f, 0.35f, 1f), Color.white };
 	private List<int> colours, solutionColors, colorSwapIxes = new List<int>();
 	private float ledInitPos;
@@ -69,10 +71,12 @@ public class TwelvetrapScript : MonoBehaviour
 
 	private static readonly string[] colorNames = { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" };
 
+	private List<SpriteRenderer> activeReticles = new List<SpriteRenderer>();
+
 	private Sprite GetEmblemSprite(string name) => EmblemSprites.First(x => x.name == name);
 
 	void Awake()
-    {
+	{
 		moduleId = moduleIdCounter++;
 
 		ledPressAnimCoroutines = new Coroutine[LEDSelectables.Length];
@@ -86,12 +90,12 @@ public class TwelvetrapScript : MonoBehaviour
 		HaloTemplate.gameObject.SetActive(false);
 		StarRend.transform.localScale = Vector3.zero;
 		Emblem.transform.parent.localScale = Vector3.zero;
-        StartCoroutine(EmblemJitter());
-        StartCoroutine(EmblemScatter());
+		StartCoroutine(EmblemJitter());
+		StartCoroutine(EmblemScatter());
 
 		var originalAlpha = LowerGlow.color.a;
-        Module.OnActivate += delegate { StartCoroutine(IntroAnim(originalAlpha)); };
-        LowerGlow.color = Color.clear;
+		Module.OnActivate += delegate { StartCoroutine(IntroAnim(originalAlpha)); };
+		LowerGlow.color = Color.clear;
 
 		for (int i = 0; i < 12; i++)
 			UnlightLED(i);
@@ -99,29 +103,31 @@ public class TwelvetrapScript : MonoBehaviour
 		cbActive = Colorblind.ColorblindModeActive;
 
 		haloCycle = Enumerable.Repeat(Color.white, 3).ToList();
-    }
 
-	
+		ReticleTemplate.gameObject.SetActive(false);
+	}
+
+
 	void Start()
-    {
+	{
 
 		foreach (var text in CBTexts)
 			text.text = string.Empty;
 
-        Calculate();
-    }
+		Calculate();
+	}
 
 	void Calculate()
 	{
 
-        var colorChars = colorNames.Select(x => x[0]).Join("");
+		var colorChars = colorNames.Select(x => x[0]).Join("");
 
 		var sections = new[] { new[] { 11, 0, 1 }, new[] { 2, 3, 4 }, new[] { 5, 6, 7 }, new[] { 8, 9, 10 } };
 
-        // High-Level Security
+		// High-Level Security
 
 
-        selectedOption = highLevelSec.SelectSec();
+		selectedOption = highLevelSec.SelectSec();
 		var secColors = selectedOption.Colors;
 
 		// Poison-Pen Letter
@@ -132,7 +138,7 @@ public class TwelvetrapScript : MonoBehaviour
 
 		// My World Is Breaking
 
-        puzzleGenerationGivesMeAStroke.GeneratePuzzle(Bomb.GetBatteryCount());
+		puzzleGenerationGivesMeAStroke.GeneratePuzzle(Bomb.GetBatteryCount());
 
 
 		var worldBreakingColors = puzzleGenerationGivesMeAStroke.Colors.Select(x => colorChars.IndexOf(x)).ToArray();
@@ -176,9 +182,9 @@ public class TwelvetrapScript : MonoBehaviour
 	}
 
 
-    void LEDPress(KMSelectable led)
+	void LEDPress(KMSelectable led)
 	{
-		if (moduleSolved || cannotPress || solve != null)
+		if (cannotPress)
 			return;
 
 		var ix = Array.IndexOf(LEDSelectables, led);
@@ -186,6 +192,9 @@ public class TwelvetrapScript : MonoBehaviour
 		if (ledPressAnimCoroutines[ix] != null)
 			StopCoroutine(ledPressAnimCoroutines[ix]);
 		ledPressAnimCoroutines[ix] = StartCoroutine(LEDPressAnim(ix));
+
+		if (moduleSolved)
+			return;
 
 		if (LEDRends[ix].material.color == Color.clear)
 		{
@@ -196,78 +205,92 @@ public class TwelvetrapScript : MonoBehaviour
 
 		if (!colorSwapIxes.Contains(ix))
 		{
-            colorSwapIxes.Add(ix);
+			colorSwapIxes.Add(ix);
 
 			if (colorSwapIxes.Count == 2)
 			{
-				
+				var temp = colours[colorSwapIxes[1]];
+				var currentIx = colours[colorSwapIxes[0]];
 
-                var temp = colours[colorSwapIxes[1]];
-                var currentIx = colours[colorSwapIxes[0]];
-
-                colours[colorSwapIxes[0]] = temp;
-                colours[colorSwapIxes[1]] = currentIx;
+				colours[colorSwapIxes[0]] = temp;
+				colours[colorSwapIxes[1]] = currentIx;
 
 				Log($"[12trap #{moduleId}] {colorSwapIxes[0] + 1} and {colorSwapIxes[1] + 1} have been swapped.");
+
+                if (reticleAnim != null)
+                    StopCoroutine(reticleAnim);
+                reticleAnim = StartCoroutine(ReticleDeathAnim(ix));
 
                 colorSwapIxes.Clear();
 
 				AssignLEDs();
 
-                foreach (var obj in Menus)
-                    obj.SetActive(false);
+				foreach (var obj in Menus)
+					obj.SetActive(false);
 
-                Emblem.enabled = true;
+				Emblem.enabled = true;
 
 				haloCycle = Enumerable.Repeat(coloursForRends[6], 3).ToList();
 
-                if (arrowCycle != null)
-                {
-                    StopCoroutine(arrowCycle);
-                    arrowCycle = null;
-                }
+				if (arrowCycle != null)
+				{
+					StopCoroutine(arrowCycle);
+					arrowCycle = null;
+				}
 
 				if (colours.SequenceEqual(solutionColors))
 				{
 					foreach (var cycle in cycleCoroutines)
 						StopCoroutine(cycle);
 
-					solve = StartCoroutine(SolveAnimation());
+                    if (reticleAnim != null)
+                        StopCoroutine(reticleAnim);
+                    DestroyReticles();
+                    solve = StartCoroutine(SolveAnimOverall());
+					Module.HandlePass();
+					moduleSolved = true;
 
 					return;
 				}
 
-                Audio.PlaySoundAtTransform("accept", transform);
+				Audio.PlaySoundAtTransform("accept", transform);
 
                 return;
-            }
-        }	
+			}
+		}
 		else if (colorSwapIxes.Contains(ix) && colorSwapIxes.Count != 2)
 		{
+            if (reticleAnim != null)
+                StopCoroutine(reticleAnim);
+            reticleAnim = StartCoroutine(ReticleDeathAnim(ix));
+
             colorSwapIxes.Clear();
 
 			foreach (var obj in Menus)
 				obj.SetActive(false);
 
 			Emblem.enabled = true;
-            haloCycle = Enumerable.Repeat(coloursForRends[6], 3).ToList();
+			haloCycle = Enumerable.Repeat(coloursForRends[6], 3).ToList();
 
-            if (arrowCycle != null)
+			if (arrowCycle != null)
 			{
-                StopCoroutine(arrowCycle);
-                arrowCycle = null;
-            }
+				StopCoroutine(arrowCycle);
+				arrowCycle = null;
+			}
 
 			return;
-        }
-			
+		}
+
+		if (reticleAnim != null)
+			StopCoroutine(reticleAnim);
+        reticleAnim = StartCoroutine(ReticleBirthAnim(ix));
 
 		switch (ix)
 		{
 			case 11:
 			case 0:
 			case 1:
-				DisplayThings(0);
+				DisplayMenu(0);
 				break;
 			case 2:
 			case 3:
@@ -278,7 +301,7 @@ public class TwelvetrapScript : MonoBehaviour
 					{ 3, 1 },
 					{ 4, 2 }
 				};
-				DisplayThings(1, getOrdinalIx[ix]);
+				DisplayMenu(1, getOrdinalIx[ix]);
 				break;
 			case 5:
 			case 6:
@@ -289,7 +312,7 @@ public class TwelvetrapScript : MonoBehaviour
 					{ 6, 1 },
 					{ 7, 2 }
 				};
-				DisplayThings(2, getCoordinateIx[ix]);
+				DisplayMenu(2, getCoordinateIx[ix]);
 				break;
 			case 8:
 			case 9:
@@ -297,14 +320,22 @@ public class TwelvetrapScript : MonoBehaviour
 				if (arrowCycle != null)
 					return;
 
-				DisplayThings(3);
+				DisplayMenu(3);
 				break;
 
 		}
 
-    }
+	}
 
-	void DisplayThings(int ix, int? groupIx = null)
+	private SpriteRenderer PlaceReticle(int pos)
+	{
+		var mesh = Instantiate(ReticleTemplate, ReticleTemplate.transform.parent);
+		mesh.transform.localPosition = LEDSelectables[pos].transform.localPosition + Vector3.up * 0.007f;
+		mesh.gameObject.SetActive(true);
+		return mesh;
+	}
+
+	void DisplayMenu(int ix, int? groupIx = null)
 	{
 		Emblem.enabled = false;
 
@@ -327,15 +358,15 @@ public class TwelvetrapScript : MonoBehaviour
 				SecTexts[1].text = selectedOption.FieldOfStudy;
 				FlagRender.sprite = Flags[Array.IndexOf(flagNames, selectedOption.Nationality)];
 				haloCycle = Enumerable.Repeat(coloursForRends[6], 3).ToList();
-                break;
+				break;
 			case 1:
 				PoisonPenOrdinal.text = poisonPenMessages[groupIx.Value];
 				haloCycle = Enumerable.Repeat(coloursForRends[6], 3).ToList();
-                break;
+				break;
 			case 2:
 				var coordinateGroups = puzzleGenerationGivesMeAStroke.CoordinateGroups[groupIx.Value];
 				var bombTypeGroups = puzzleGenerationGivesMeAStroke.BombTypeGroups[groupIx.Value];
-				var colorGroup = new[] { coloursForRends[4], coloursForRends[6], coloursForRends[0]};
+				var colorGroup = new[] { coloursForRends[4], coloursForRends[6], coloursForRends[0] };
 				var colorChars = "B R".ToCharArray();
 
 				for (int i = 0; i < 3; i++)
@@ -351,13 +382,87 @@ public class TwelvetrapScript : MonoBehaviour
 		}
 	}
 
-	IEnumerator SolveAnimation()
+	void DestroyReticles()
 	{
-		Audio.PlaySoundAtTransform("Solve", transform);
+        for (int i = 0; i < activeReticles.Count(); i++)
+        {
+            Destroy(activeReticles.First().gameObject);
+            activeReticles.RemoveAt(0);
+        }
+    }
 
-		var solveA = StartCoroutine(SolveA());
+	private IEnumerator ReticleBirthAnim(int pos, float duration = 0.15f)
+	{
+        DestroyReticles();
+        var ret = PlaceReticle(pos);
+		ret.color = Color.clear;
+		ret.transform.localScale = Vector3.one * 0.5f;
+		activeReticles.Add(ret);
 
-		yield return new WaitForSeconds(9);
+		var hue = LEDSelectables[pos].GetComponentsInChildren<MeshRenderer>().Where(x => x.name == "LED").First().material.color;
+		var mult = new Color(Mathf.Min(hue.r + 0.35f, 1), Mathf.Min(hue.g + 0.35f, 1), Mathf.Min(hue.b + 0.35f, 1));
+
+		var startingAngle = Range(30f, 45f) * (Range(0, 2) == 0 ? 1 : -1);
+
+		float timer = 0;
+		while (timer < duration)
+		{
+			yield return null;
+			timer += Time.deltaTime;
+			ret.transform.localScale = Vector3.one * Easing.OutExpo(timer, 0.5f, 1f, duration);
+			ret.color = Color.Lerp(new Color(1, 1, 1, 0), Color.white, timer / duration) * mult;
+			ret.transform.localEulerAngles = new Vector3(90, Easing.OutExpo(timer, startingAngle, 0, duration), 0);
+        }
+        ret.transform.localEulerAngles = new Vector3(90, 0, 0);
+    }
+
+	private IEnumerator ReticleDeathAnim(int pos, float duration = 0.15f)
+	{
+		if (pos != colorSwapIxes[0])
+		{
+			var ret = PlaceReticle(pos);
+			ret.color = Color.clear;
+			ret.transform.localScale = Vector3.one * 1.25f;
+			activeReticles.Add(ret);
+		}
+
+		var mults = new List<Color>();
+
+		for (int i = 0; i < activeReticles.Count(); i++)
+		{
+			var hue = LEDSelectables[colorSwapIxes[i]].GetComponentsInChildren<MeshRenderer>().Where(x => x.name == "LED").First().material.color;
+			mults.Add(new Color(Mathf.Min(hue.r + 0.35f, 1), Mathf.Min(hue.g + 0.35f, 1), Mathf.Min(hue.b + 0.35f, 1)));
+		}
+
+		var startingAngle = Range(30f, 45f) * (Range(0, 2) == 0 ? 1 : -1);
+
+		float timer = 0;
+		while (timer < duration)
+		{
+			yield return null;
+			timer += Time.deltaTime;
+			for (int i = 0; i < activeReticles.Count(); i++)
+			{
+				activeReticles[i].transform.localScale = Vector3.one * Easing.InExpo(timer, 1.25f, 0, duration);
+				activeReticles[i].color = Color.Lerp(Color.white, new Color(1, 1, 1, 0), timer / duration) * mults[i];
+                activeReticles[i].transform.localEulerAngles = new Vector3(90, Easing.InExpo(timer, 0, startingAngle, duration), 0);
+			}
+        }
+		DestroyReticles();
+    }
+
+	private IEnumerator SolveAnimOverall(float duration = 5.98f)
+	{
+		Audio.PlaySoundAtTransform("solve", transform);
+
+		var solveA = StartCoroutine(SolveAnimFirstHalf(duration));
+
+		float timer = 0;
+		while (timer < duration)
+		{
+			yield return null;
+			timer += Time.deltaTime;
+		}
 
 		StopCoroutine(solveA);
 		Emblem.enabled = false;
@@ -366,22 +471,39 @@ public class TwelvetrapScript : MonoBehaviour
 			UnlightLED(i);
 	}
 
-	IEnumerator SolveA()
+	private IEnumerator SolveAnimFirstHalf(float duration, float firstDuration = 3f, float speedUpper = 0.25f, float speedLower = 0.01f)
 	{
-		var speed = 0.25f;
+		float overallTimer = 0;
+		var solveColours = new List<Color>();
 
-		while (true)
+        while (overallTimer < firstDuration)
 		{
-			colours = Enumerable.Range(0, 12).Select(_ => Range(0, 7)).ToList();
-			AssignLEDsNoUnlit();
-			yield return new WaitForSeconds(speed);
+			solveColours = Enumerable.Range(0, 12).Select(_ => Range(0, 7)).ToList().Select(x => coloursForRends[x]).ToList();
 
-			if (speed == 0.05f)
-				continue;
+            float timer = 0;
+			while (timer < Mathf.Lerp(speedUpper, speedLower, overallTimer / duration))
+			{
+                AssignLEDsNoUnlit(solveColours.Select(x => x * Mathf.Lerp(0, 1, overallTimer / firstDuration)).ToList());
+                yield return null;
+				timer += Time.deltaTime;
+				overallTimer += Time.deltaTime;
+			}
+        }
+        while (true)
+        {
+            solveColours.Insert(0, solveColours.Last());
+			solveColours.RemoveAt(solveColours.Count() - 1);
+            AssignLEDsNoUnlit(solveColours);
 
-			speed -= 0.005f;
-		}
-	}
+            float timer = 0;
+            while (timer < Mathf.Lerp(speedUpper, speedLower, overallTimer / duration))
+            {
+                yield return null;
+                timer += Time.deltaTime;
+                overallTimer += Time.deltaTime;
+            }
+        }
+    }
 
 
 
@@ -413,12 +535,12 @@ public class TwelvetrapScript : MonoBehaviour
 			
     }
 
-	void AssignLEDsNoUnlit()
+	void AssignLEDsNoUnlit(List<Color> customColours)
 	{
 		for (int i = 0; i < LEDRends.Length; i++)
 		{
 			CBTexts[i].text = string.Empty;
-			LightLED(i, coloursForRends[colours[i]]);
+			LightLED(i, customColours[i]);
 		}
 	}
 
