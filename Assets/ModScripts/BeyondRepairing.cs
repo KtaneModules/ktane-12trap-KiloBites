@@ -161,9 +161,7 @@ public class BeyondRepairing
             var grabIxes = Enumerable.Range(0, 6).Where(x => attribs[chosenAttrib][x] == toBeGrouped[i]).ToArray();
 
             for (int j = 0; j < 2; j++)
-            {
                 arrowPair[j] = new Arrow(attribs[0][grabIxes[j]], arrowColors[attribs[1][grabIxes[j]]], new[] { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" }[attribs[1][grabIxes[j]]], attribs[2][grabIxes[j]], Range(0, 6));
-            }
                 
 
             arrowPairs.Add(arrowPair);
@@ -205,20 +203,29 @@ public class BeyondRepairing
     {
         var colorNames = new[] { "Red", "Yellow", "Magenta", "White", "Green", "Blue", "Cyan" };
 
+        var finalColors = new List<char>();
+
         for (int i = 0; i < 3; i++)
         {
             Log($"[12trap #{modId}] Pair {i + 1}:");
 
             var pos = 3;
 
+            var getDirs = new List<string>();
+
             foreach (var arrow in arrowPairs[i])
             {
                 var oldPos = pos;
                 pos = hexDestinations[pos][arrow.Direction];
-                Log($"[12trap #{modId}] Currently at {colorNames[oldPos]}. Going {dirNames[arrow.Direction]} takes you to {colorNames[pos]}.");
+                getDirs.Add(dirNames[arrow.Direction]);
             }
 
-            Log($"[12trap #{modId}] The final color for that pair is: {colorNames[pos]}");
+            Log($"[12trap #{modId}] Starting from white, go {getDirs.Join(" and ")}");
+            Log($"[12trap #{modId}] The final color for that arrow pair is: {colorNames[pos]}");
+
+            finalColors.Add(colorNames[pos][0]);
         }
+
+        Log($"[12trap #{modId}] The final colors are {finalColors.Join("")}");
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using static UnityEngine.Random;
+using static UnityEngine.Debug;
 
 public class SecOption
 {
@@ -23,7 +24,11 @@ public class SecOption
 public class HighLevelSecurity
 {
 
-    private SecOption[] allSecTypes;
+    private SecOption[] allSecTypes; 
+
+    private bool beIncorrect;
+    private SecOption selectedSec, modifiedSec;
+    private int[] ixesToSelect;
 
     private static readonly string[][] allTypes =
     {
@@ -83,21 +88,20 @@ public class HighLevelSecurity
 
     public HighLevelSecurity()
     {
-
         allSecTypes = Enumerable.Range(0, allTypes.Length).Select(x => new SecOption(allTypes[x][0], allTypes[x][1], allTypes[x][2], allTypes[x][3], colorTypes[x])).ToArray();
     }
 
     public SecOption SelectSec()
     {
-        var selectedSec = allSecTypes.PickRandom();
+        selectedSec = allSecTypes.PickRandom();
 
-        var beIncorrect = Range(0, 2) == 0;
+        beIncorrect = Range(0, 2) == 0;
 
-        var colors = selectedSec.Colors;
+        var colors = selectedSec.Colors.ToArray();
 
         if (beIncorrect)
         {
-            var ixesToSelect = Enumerable.Range(0, 3).ToList().Shuffle().Take(2).OrderBy(x => x).ToArray();
+            ixesToSelect = Enumerable.Range(0, 3).ToList().Shuffle().Take(2).OrderBy(x => x).ToArray();
 
             var doRandom = Enumerable.Range(0, 3).Select(ixesToSelect.Contains).ToArray();
 
@@ -107,13 +111,32 @@ public class HighLevelSecurity
             colors[ixesToSelect[0]] = tempColor;
             colors[ixesToSelect[1]] = currentColor;
 
-            return new SecOption
-                (doRandom[0] ? allTypes.Select(x => x[0]).Where(x => !selectedSec.FirstName.Contains(x)).PickRandom() : selectedSec.FirstName, 
-                doRandom[1] ? allTypes.Select(x => x[1]).Where(x => !selectedSec.Nationality.Contains(x)).PickRandom() : selectedSec.Nationality, 
+            modifiedSec = new SecOption
+                (doRandom[0] ? allTypes.Select(x => x[0]).Where(x => !selectedSec.FirstName.Contains(x)).PickRandom() : selectedSec.FirstName,
+                doRandom[1] ? allTypes.Select(x => x[1]).Where(x => !selectedSec.Nationality.Contains(x)).PickRandom() : selectedSec.Nationality,
                 doRandom[2] ? allTypes.Select(x => x[2]).Where(x => !selectedSec.FieldOfStudy.Contains(x)).PickRandom() : selectedSec.FieldOfStudy, selectedSec.Status, colors);
+
+            return modifiedSec;
 
         }
 
+        modifiedSec = selectedSec;
+
         return selectedSec;
+    }
+
+    public void LogHighLevelSec(int modId, char[] colorNames)
+    {
+        Log($"[12trap #{modId}] The current displayed information is as follows: [Name: {modifiedSec.FirstName}], [Nationality: {modifiedSec.Nationality}], [Field of Study: {modifiedSec.FieldOfStudy}]");
+
+        if (beIncorrect)
+        {
+            var info = new[] { modifiedSec.FirstName, modifiedSec.Nationality, modifiedSec.FieldOfStudy };
+
+            Log($"[12trap #{modId}] Only two pieces of information match this employee ({ixesToSelect.Select(x => info[x]).Join(", ")})");
+            Log($"[12trap #{modId}] The original color sequence is {selectedSec.Colors.Select(x => colorNames[x]).Join("")}. After swapping positions {ixesToSelect.Select(x => x + 1).Join(" and ")}, the final color sequence is {modifiedSec.Colors.Select(x => colorNames[x]).Join("")}");
+        }
+        else
+            Log($"[12trap #{modId}] All three columns matched. Therefore, the final color sequence for this one is {selectedSec.Colors.Select(x => colorNames[x]).Join("")}");
     }
 }

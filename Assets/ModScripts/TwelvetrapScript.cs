@@ -130,24 +130,45 @@ public class TwelvetrapScript : MonoBehaviour
 		selectedOption = highLevelSec.SelectSec();
 		var secColors = selectedOption.Colors;
 
-		// Poison-Pen Letter
+		Log($"[12trap #{moduleId}] *================================*");
 
-		poisonPenMessages = poisonPenLetter.GenerateMessage();
+		Log($"[12trap #{moduleId}] High-Level Security:");
+
+		highLevelSec.LogHighLevelSec(moduleId, colorChars.ToCharArray());
+
+        // Poison-Pen Letter
+
+        Log($"[12trap #{moduleId}] *================================*");
+
+        Log($"[12trap #{moduleId}] Poison-Pen Letter:");
+
+        poisonPenMessages = poisonPenLetter.GenerateMessage();
 
 		var poisonColors = poisonPenLetter.GenerateColors().Select(x => colorChars.IndexOf(x)).ToArray();
 
-		// My World Is Breaking
+		poisonPenLetter.LogPoisonPen(moduleId, poisonPenMessages, poisonPenLetter.GenerateColors());
 
-		puzzleGenerationGivesMeAStroke.GeneratePuzzle(Bomb.GetBatteryCount());
+        // My World Is Breaking
+
+        Log($"[12trap #{moduleId}] *================================*");
+
+        puzzleGenerationGivesMeAStroke.GeneratePuzzle(Bomb.GetBatteryCount());
+
+		Log($"[12trap #{moduleId}] My World Is Breaking:");
+
+		puzzleGenerationGivesMeAStroke.LogMyWorldIsBreaking(moduleId, Bomb.GetBatteryCount());
 
 
 		var worldBreakingColors = puzzleGenerationGivesMeAStroke.Colors.Select(x => colorChars.IndexOf(x)).ToArray();
 
-		// Beyond Re-Pairing
+        // Beyond Re-Pairing
 
-		beyondRepairing = new BeyondRepairing(Bomb.GetBatteryCount(), Bomb.GetBatteryHolderCount());
+        Log($"[12trap #{moduleId}] *================================*");
+		Log($"[12trap #{moduleId}] Beyond Re-Pairing:");
 
-		Log($"[12trap #{moduleId}] The arrows paired for Beyond Re-Pairing are: {beyondRepairing.LogPairs()}");
+        beyondRepairing = new BeyondRepairing(Bomb.GetBatteryCount(), Bomb.GetBatteryHolderCount());
+
+		Log($"[12trap #{moduleId}] The arrows paired are: {beyondRepairing.LogPairs()}");
 		Log($"[12trap #{moduleId}] The arrows are displayed as follows: {beyondRepairing.LogDisplayed()}");
 		beyondRepairing.LogColors(moduleId);
 
@@ -178,7 +199,7 @@ public class TwelvetrapScript : MonoBehaviour
 		solutionColors = combinedSet.ToList();
 		colours = solutionColors.ToList().Shuffle();
 
-		Log($"[12trap #{moduleId}] The solution in clockwise order from the topmost LED is: {solutionColors.Select(x => colorChars[x]).Select((x, i) => new { Index = i, Value = x }).GroupBy(x => x.Index / 3).Select(x => x.Select(v => v.Value).Join("")).Join(";")}");
+		Log($"[12trap #{moduleId}] Starting from the topmost left button, the solution is: {sections.Select(x => x.Select(y => colorChars[solutionColors[y]]).Join("")).Join(";")}");
 	}
 
 
@@ -249,6 +270,7 @@ public class TwelvetrapScript : MonoBehaviour
                     solve = StartCoroutine(SolveAnimOverall());
 					Module.HandlePass();
 					moduleSolved = true;
+					Log($"[12trap #{moduleId}] All LEDS are in their correct positions. Access granted.");
 
 					return;
 				}

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using static UnityEngine.Random;
+using static UnityEngine.Debug;
 
 public enum BombType
 {
@@ -31,7 +32,7 @@ public class MyWorldIsBreaking
     public List<string[]> CoordinateGroups;
     public List<BombType[]> BombTypeGroups;
 
-    private bool[] grid;
+    private bool[] grid, modifiedGrid;
 
     private List<int> selectedCoords = new List<int>();
 
@@ -157,7 +158,7 @@ public class MyWorldIsBreaking
         BombType bomb;
         
 
-        var modifiedGrid = grid.ToArray();
+        modifiedGrid = grid.ToArray();
 
         do
         {
@@ -209,10 +210,21 @@ public class MyWorldIsBreaking
         if (GeneratedBombs.Count != 9)
             goto tryagain;
 
-        coordinates = selectedCoords.Select(GetRowColumn).ToArray();
+        
         Colors = Enumerable.Range(0, 49).Where(x => modifiedGrid[x]).Select(x => colorGrid[x]).ToArray();
         GeneratedBombs.Shuffle();
+        coordinates = GeneratedBombs.Select(x => x.Position).Select(GetRowColumn).ToArray();
         CoordinateGroups = coordinates.Select((x, i) => new { Index = i, Value = x }).GroupBy(x => x.Index / 3).Select(x => x.Select(v => v.Value).ToArray()).ToList();
         BombTypeGroups = GeneratedBombs.Select(x => x.BombType).Select((x, i) => new { Index = i, Value = x }).GroupBy(x => x.Index / 3).Select(x => x.Select(v => v.Value).ToArray()).ToList();
+    }
+
+    public void LogMyWorldIsBreaking(int modId, int bat)
+    {
+        Log($"[12trap #{modId}] The coordinates selected were: {Enumerable.Range(0, 9).Select(x => $"{coordinates[x]} [{"BKR"[(int)GeneratedBombs[x].BombType]}]").Join(", ")}");
+        Log($"[12trap #{modId}] Grid {bat} has been selected");
+        Log($"[12trap #{modId}] Before grid: {Enumerable.Range(0, 7).Select(x => Enumerable.Range(0, 7).Select(y => grid[7 * x + y] ? 'X' : '-').Join("")).Join(";")}");
+        Log($"[12trap #{modId}] After grid: {Enumerable.Range(0, 7).Select(x => Enumerable.Range(0, 7).Select(y => modifiedGrid[7 * x + y] ? 'X' : '-').Join("")).Join(";")}");
+
+        Log($"[12trap #{modId}] The final colors were {Colors.Join("")}");
     }
 }
