@@ -27,6 +27,7 @@ public class TwelvetrapScript : MonoBehaviour
 	public SpriteRenderer[] Glows;
 	public TextMesh[] CBTexts;
 	public TextMesh ArrowCB;
+	public TextMesh SolveText;
 	public SpriteRenderer ReticleTemplate;
 
 	public GameObject[] Menus;
@@ -475,9 +476,10 @@ public class TwelvetrapScript : MonoBehaviour
 
 	private IEnumerator SolveAnimOverall(float duration = 5.98f)
 	{
-		Audio.PlaySoundAtTransform("solve", transform);
+		Audio.PlaySoundAtTransform("Solve", transform);
 
 		var solveA = StartCoroutine(SolveAnimFirstHalf(duration));
+		var solveB = StartCoroutine(SolveAnimSecondHalf());
 
 		float timer = 0;
 		while (timer < duration)
@@ -487,10 +489,23 @@ public class TwelvetrapScript : MonoBehaviour
 		}
 
 		StopCoroutine(solveA);
+		StopCoroutine(solveB);
 		Emblem.enabled = false;
+		SolveText.text = string.Empty;
 
 		for (int i = 0; i < 12; i++)
 			UnlightLED(i);
+
+		var solve = "ACCESS GRANTED";
+
+		yield return new WaitForSeconds(0.5f);
+
+		for (int i = 0; i < solve.Length; i++)
+		{
+			Audio.PlaySoundAtTransform("Type", transform);
+			SolveText.text += solve[i];
+			yield return new WaitForSeconds(0.2f);
+		}
 	}
 
 	private IEnumerator SolveAnimFirstHalf(float duration, float firstDuration = 3f, float speedUpper = 0.25f, float speedLower = 0.01f)
@@ -526,6 +541,21 @@ public class TwelvetrapScript : MonoBehaviour
             }
         }
     }
+
+	private IEnumerator SolveAnimSecondHalf()
+	{
+		var randomTexts = new[] { "THE COUNCIL AWAITS", "UNLOCKED", "WE WILL SAY EVIL", "WE WILL SPEAK EVIL", "WORLD DOMINATION" };
+
+		while (true)
+		{
+			Emblem.enabled = true;
+			SolveText.text = string.Empty;
+			yield return new WaitForSeconds(Range(0.02f, 0.08f));
+			SolveText.text = randomTexts.PickRandom();
+			Emblem.enabled = false;
+			yield return new WaitForSeconds(Range(0.02f, 0.08f));
+		}
+	}
 
 
 
@@ -796,13 +826,133 @@ public class TwelvetrapScript : MonoBehaviour
 
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} something";
+    private readonly string TwitchHelpMessage = @"!{0} CB toggles colorblind. || !{0} SELECT t/r/b/l/top/right/bottom/left selects the section to toggle a menu. || !{0} DESELECT deselects the latest button pressed. || !{0} SWAP [insert number] [insert number] swaps the two colors. Top button is 1, ascending clockwise.";
 #pragma warning restore 414
 
 	IEnumerator ProcessTwitchCommand(string command)
     {
 		string[] split = command.ToUpperInvariant().Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
 		yield return null;
+
+		if ("CB".ContainsIgnoreCase(split[0]))
+		{
+			cbActive = !cbActive;
+
+			if (arrowCycle != null)
+			{
+				StopCoroutine(arrowCycle);
+				arrowCycle = StartCoroutine(CycleArrows());
+			}
+			yield break;
+		}
+
+		if ("SELECT".ContainsIgnoreCase(split[0]))
+		{
+			if (split.Length == 1)
+			{
+				yield return "sendtochaterror Please specify what button to select!";
+				yield break;
+			}
+
+			if (split.Length > 2)
+				yield break;
+
+			var valids = new[] { "T", "R", "B", "L", "TOP", "RIGHT", "BOTTOM", "LEFT" };
+
+			if (!valids.Contains(split[1]))
+			{
+				yield return $"sendtochaterror {split[1]} isn't valid!";
+				yield break;
+			}
+
+			if (colorSwapIxes.Count == 1)
+			{
+				while (LEDRends[colorSwapIxes[0]].material.color == Color.clear)
+					yield return "trycancel";
+
+				LEDSelectables[colorSwapIxes[0]].OnInteract();
+				yield return new WaitForSeconds(0.25f);
+			}
+
+			int selected = 0;
+
+			switch (split[1])
+			{
+				case "T":
+				case "TOP":
+					selected = new[] { 11, 0, 1 }.PickRandom();
+					break;
+				case "R":
+				case "RIGHT":
+					selected = new[] { 2, 3, 4 }.PickRandom();
+					break;
+				case "B":
+				case "BOTTOM":
+					selected = new[] { 5, 6, 7 }.PickRandom();
+					break;
+				case "L":
+				case "LEFT":
+					selected = new[] { 8, 9, 10 }.PickRandom();
+					break;
+			}
+
+			while (LEDRends[selected].material.color == Color.clear)
+				yield return "trycancel";
+
+			LEDSelectables[selected].OnInteract();
+			yield return new WaitForSeconds(0.25f);
+			yield break;
+		}
+
+		if ("DESELECT".ContainsIgnoreCase(split[0]))
+		{
+			if (split.Length > 1)
+				yield break;
+
+			if (colorSwapIxes.Count == 0)
+			{
+				yield return "sendtochaterror There is nothing to deselect!";
+				yield break;
+			}
+
+			while (LEDRends[colorSwapIxes[0]].material.color == Color.clear)
+				yield return "trycancel";
+
+			LEDSelectables[colorSwapIxes[0]].OnInteract();
+			yield return new WaitForSeconds(0.1f);
+
+			yield break;
+		}
+
+		if ("SWAP".ContainsIgnoreCase(split[0]))
+		{
+			if (split.Length == 1 || split.Length > 3)
+				yield break;
+
+			if (!Enumerable.Range(0, 12).Contains(int.Parse(split[1]) - 1) || !Enumerable.Range(0, 12).Contains(int.Parse(split[2]) - 1))
+			{
+				yield return "sendtochaterror One or both of these numbers are invalid!";
+				yield break;
+			}
+
+			if (colorSwapIxes.Count == 1)
+			{
+				while (LEDRends[colorSwapIxes[0]].material.color == Color.clear)
+					yield return "trycancel";
+
+				LEDSelectables[colorSwapIxes[0]].OnInteract();
+				yield return new WaitForSeconds(0.25f);
+			}
+
+			foreach (var num in split.Skip(1).Select(x => int.Parse(x) - 1))
+			{
+				while (LEDRends[num].material.color == Color.clear)
+					yield return "trycancel";
+
+				LEDSelectables[num].OnInteract();
+				yield return new WaitForSeconds(0.25f);
+			}
+		}
     }
 
 	IEnumerator TwitchHandleForcedSolve()
