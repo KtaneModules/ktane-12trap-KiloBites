@@ -226,6 +226,6 @@ public class BeyondRepairing
             finalColors.Add(colorNames[pos][0]);
         }
 
-        Log($"[12trap #{modId}] The final colors are {finalColors.Join("")}");
+        Log($"[12trap #{modId}] The final color sequence is: {finalColors.Join("")}");
     }
 }

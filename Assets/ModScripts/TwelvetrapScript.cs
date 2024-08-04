@@ -9,8 +9,8 @@ using static UnityEngine.Debug;
 
 public class TwelvetrapScript : MonoBehaviour
 {
-	static int moduleIdCounter = 1;
-	int moduleId;
+	static int moduleIdCounter = 1, twelveTrapIdCounter = 1;
+	int moduleId, twelveTrapId;
 
 	public KMBombInfo Bomb;
 	public KMAudio Audio;
@@ -79,6 +79,7 @@ public class TwelvetrapScript : MonoBehaviour
 	void Awake()
 	{
 		moduleId = moduleIdCounter++;
+		twelveTrapId = twelveTrapIdCounter++;
 
 		ledPressAnimCoroutines = new Coroutine[LEDSelectables.Length];
 		ledInitPos = LEDSelectables[0].GetComponentsInChildren<MeshRenderer>().First(x => x.name == "LED").transform.localPosition.y;
@@ -117,6 +118,8 @@ public class TwelvetrapScript : MonoBehaviour
 
 		Calculate();
 	}
+
+	void OnDestroy() => twelveTrapIdCounter = 1;
 
 	void Calculate()
 	{
@@ -544,16 +547,16 @@ public class TwelvetrapScript : MonoBehaviour
 
 	private IEnumerator SolveAnimSecondHalf()
 	{
-		var randomTexts = new[] { "THE COUNCIL AWAITS", "UNLOCKED", "WE WILL SAY EVIL", "WE WILL SPEAK EVIL", "WORLD DOMINATION" };
+		var randomTexts = new[] { "THE COUNCIL AWAITS", "UNLOCKED", "WE WILL SAY EVIL", "WE WILL SPEAK EVIL", "WORLD DOMINATION", "YOU ARE SET FREE", "WE WILL BE SILENT" };
 
 		while (true)
 		{
 			Emblem.enabled = true;
 			SolveText.text = string.Empty;
-			yield return new WaitForSeconds(Range(0.02f, 0.08f));
+			yield return new WaitForSeconds(Range(0.04f, 0.12f));
 			SolveText.text = randomTexts.PickRandom();
 			Emblem.enabled = false;
-			yield return new WaitForSeconds(Range(0.02f, 0.08f));
+			yield return new WaitForSeconds(Range(0.04f, 0.12f));
 		}
 	}
 
@@ -654,8 +657,11 @@ public class TwelvetrapScript : MonoBehaviour
 
 	private IEnumerator IntroAnim(float lowerGlowOriginal, float openingPause = 0.5f, float activateInterval = 0.35f, float hologramSpreadDur = 0.05f)
 	{
-		Audio.PlaySoundAtTransform("boot", transform);
-		float timer = 0;
+		if (twelveTrapId == 1)
+            Audio.PlaySoundAtTransform("boot", transform);
+
+
+        float timer = 0;
 		while (timer < openingPause)
 		{
 			yield return null;
@@ -671,7 +677,9 @@ public class TwelvetrapScript : MonoBehaviour
 
 		for (int i = 0; i < 12; i++)
 		{
-            Audio.PlaySoundAtTransform("colour spawn", LEDSelectables[i].transform);
+			if (twelveTrapId == 1)
+                Audio.PlaySoundAtTransform("colour spawn", LEDSelectables[i].transform);
+
             LightLED(i, Color.white);
             timer = 0;
 			while (timer < activateInterval / (i + 1))
@@ -682,7 +690,11 @@ public class TwelvetrapScript : MonoBehaviour
         }
 		for (int i = 0; i < 12; i++)
 			LightLED(i, coloursForRends[colours[i]]);
-        Audio.PlaySoundAtTransform("loaded", transform);
+
+		if (twelveTrapId == 1)
+            Audio.PlaySoundAtTransform("loaded", transform);
+
+
         CycleLEDs();
 
         timer = 0;
@@ -691,7 +703,11 @@ public class TwelvetrapScript : MonoBehaviour
             yield return null;
             timer += Time.deltaTime;
         }
-        Audio.PlaySoundAtTransform("hologram open", transform);
+
+		if (twelveTrapId == 1)
+            Audio.PlaySoundAtTransform("hologram open", transform);
+
+
 
         timer = 0;
 		while (timer < hologramSpreadDur)
@@ -826,7 +842,7 @@ public class TwelvetrapScript : MonoBehaviour
 
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} CB toggles colorblind. || !{0} SELECT t/r/b/l/top/right/bottom/left selects the section to toggle a menu. || !{0} DESELECT deselects the latest button pressed. || !{0} SWAP [insert number] [insert number] swaps the two colors. Top button is 1, ascending clockwise.";
+    private readonly string TwitchHelpMessage = @"!{0} CB toggles colorblind. || !{0} SELECT t/r/b/l/top/right/bottom/left # selects the section (and depending a specified section, a number) to toggle a menu. || !{0} DESELECT deselects the latest button pressed. || !{0} SWAP [insert number] [insert number] swaps the two colors. Top button is 1, ascending clockwise.";
 #pragma warning restore 414
 
 	IEnumerator ProcessTwitchCommand(string command)
@@ -843,6 +859,22 @@ public class TwelvetrapScript : MonoBehaviour
 				StopCoroutine(arrowCycle);
 				arrowCycle = StartCoroutine(CycleArrows());
 			}
+
+			if (colorSwapIxes.Count == 1)
+				if (new[] { 5, 6, 7 }.Contains(colorSwapIxes[0]))
+				{
+					var getIx = new Dictionary<int, int>
+					{
+						{ 5, 0 },
+						{ 6, 1 },
+						{ 7, 2 }
+					};
+
+					DisplayMenu(2, getIx[colorSwapIxes[0]]);
+				}
+
+			AssignLEDs();
+
 			yield break;
 		}
 
@@ -854,7 +886,7 @@ public class TwelvetrapScript : MonoBehaviour
 				yield break;
 			}
 
-			if (split.Length > 2)
+			if (split.Length > 3)
 				yield break;
 
 			var valids = new[] { "T", "R", "B", "L", "TOP", "RIGHT", "BOTTOM", "LEFT" };
@@ -862,6 +894,12 @@ public class TwelvetrapScript : MonoBehaviour
 			if (!valids.Contains(split[1]))
 			{
 				yield return $"sendtochaterror {split[1]} isn't valid!";
+				yield break;
+			}
+
+			if (!Enumerable.Range(0, 3).Contains(int.Parse(split[2]) - 1))
+			{
+				yield return $"sendtochaterror {split[2]} isn't valid!";
 				yield break;
 			}
 
@@ -880,18 +918,55 @@ public class TwelvetrapScript : MonoBehaviour
 			{
 				case "T":
 				case "TOP":
+					if (split.Length == 3)
+					{
+						yield return "sendtochaterror A number is not needed for this section.";
+						yield break;
+					}
 					selected = new[] { 11, 0, 1 }.PickRandom();
 					break;
 				case "R":
 				case "RIGHT":
-					selected = new[] { 2, 3, 4 }.PickRandom();
+
+					if (split.Length == 2)
+					{
+						yield return "sendtochaterror A number is needed for this section. Please specify a number between 1-3.";
+						yield break;
+					}
+
+					var poisonPenIxes = new Dictionary<int, int>
+					{
+						{ 0, 2 },
+						{ 1, 3 },
+						{ 2, 4 },
+					};
+
+					selected = poisonPenIxes[int.Parse(split[2]) - 1];
 					break;
 				case "B":
 				case "BOTTOM":
-					selected = new[] { 5, 6, 7 }.PickRandom();
+					if (split.Length == 2)
+					{
+						yield return "sendtochaterror A number is needed for this section. Please specify a number between 1-3.";
+						yield break;
+					}
+
+					var worldBreakingIxes = new Dictionary<int, int>
+					{
+						{ 0, 5 },
+						{ 1, 6 },
+						{ 2, 7 }
+					};
+
+					selected = worldBreakingIxes[int.Parse(split[2]) - 1];
 					break;
 				case "L":
 				case "LEFT":
+					if (split.Length == 3)
+					{
+						yield return "sendtochaterror A number is not needed for this section.";
+						yield break;
+					}
 					selected = new[] { 8, 9, 10 }.PickRandom();
 					break;
 			}
@@ -957,8 +1032,34 @@ public class TwelvetrapScript : MonoBehaviour
 
 	IEnumerator TwitchHandleForcedSolve()
     {
-		yield return null;
+		while (cannotPress)
+			yield return true;
+
+		if (colorSwapIxes.Count == 1)
+		{
+			while (LEDRends[colorSwapIxes[0]].material.color == Color.clear)
+				yield return true;
+
+			LEDSelectables[colorSwapIxes[0]].OnInteract();
+			yield return new WaitForSeconds(0.25f);
+		}
+
+		
+
+		while (!colours.SequenceEqual(solutionColors))
+		{
+            var isCorrectPos = Enumerable.Range(0, 12).Select(x => solutionColors[x] == colours[x]).ToArray();
+			var buttonsToPress = Enumerable.Range(0, 12).Where(x => !isCorrectPos[x]).ToList().Shuffle().Take(2).ToList();
+
+			foreach (var ix in buttonsToPress)
+			{
+				while (LEDRends[ix].material.color == Color.clear)
+					yield return true;
+
+				LEDSelectables[ix].OnInteract();
+				yield return new WaitForSeconds(0.25f);
+			}
+        }
+
     }
-
-
 }

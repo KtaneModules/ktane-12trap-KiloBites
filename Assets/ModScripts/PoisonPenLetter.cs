@@ -65,7 +65,7 @@ public class PoisonPenLetter
     public void LogPoisonPen(int modId, string[] messages, char[] colors)
     {
         Log($"[12trap #{modId}] The three ordinals chosen are as follows: {messages.Join(", ")}");
-        Log($"[12trap #{modId}] The final colors are: {colors.Join("")}");
+        Log($"[12trap #{modId}] The final color sequence is: {colors.Join("")}");
     }
 
 }

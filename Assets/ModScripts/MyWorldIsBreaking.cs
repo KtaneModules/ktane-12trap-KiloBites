@@ -221,10 +221,10 @@ public class MyWorldIsBreaking
     public void LogMyWorldIsBreaking(int modId, int bat)
     {
         Log($"[12trap #{modId}] The coordinates selected were: {Enumerable.Range(0, 9).Select(x => $"{coordinates[x]} [{"BKR"[(int)GeneratedBombs[x].BombType]}]").Join(", ")}");
-        Log($"[12trap #{modId}] Grid {bat} has been selected");
+        Log($"[12trap #{modId}] Grid {(bat >= 5 ? "5+" : bat.ToString())} has been selected");
         Log($"[12trap #{modId}] Before grid: {Enumerable.Range(0, 7).Select(x => Enumerable.Range(0, 7).Select(y => grid[7 * x + y] ? 'X' : '-').Join("")).Join(";")}");
         Log($"[12trap #{modId}] After grid: {Enumerable.Range(0, 7).Select(x => Enumerable.Range(0, 7).Select(y => modifiedGrid[7 * x + y] ? 'X' : '-').Join("")).Join(";")}");
 
-        Log($"[12trap #{modId}] The final colors were {Colors.Join("")}");
+        Log($"[12trap #{modId}] The final colors are: {Colors.Join("")}");
     }
 }

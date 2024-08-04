@@ -134,9 +134,9 @@ public class HighLevelSecurity
             var info = new[] { modifiedSec.FirstName, modifiedSec.Nationality, modifiedSec.FieldOfStudy };
 
             Log($"[12trap #{modId}] Only two pieces of information match this employee ({ixesToSelect.Select(x => info[x]).Join(", ")})");
-            Log($"[12trap #{modId}] The original color sequence is {selectedSec.Colors.Select(x => colorNames[x]).Join("")}. After swapping positions {ixesToSelect.Select(x => x + 1).Join(" and ")}, the final color sequence is {modifiedSec.Colors.Select(x => colorNames[x]).Join("")}");
+            Log($"[12trap #{modId}] The original color sequence is {selectedSec.Colors.Select(x => colorNames[x]).Join("")}. After swapping positions {ixesToSelect.Select(x => x + 1).Join(" and ")}, the final color sequence is: {modifiedSec.Colors.Select(x => colorNames[x]).Join("")}");
         }
         else
-            Log($"[12trap #{modId}] All three columns matched. Therefore, the final color sequence for this one is {selectedSec.Colors.Select(x => colorNames[x]).Join("")}");
+            Log($"[12trap #{modId}] All three columns matched. Therefore, the final color sequence is: {selectedSec.Colors.Select(x => colorNames[x]).Join("")}");
     }
 }

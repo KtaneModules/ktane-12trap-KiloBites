@@ -14,7 +14,10 @@ MonoBehaviour:
   id: twelvetrap
   title: 12trap
   author: Kilo Bites, GhostSalt and ItzShaun
-  description: The Council of the Sparking Diamond... One fear. Twelve trap.
+  description: 'The Council of the Sparking Diamond... One fear. Twelve trap.
+
+
+    Swap the colored leds to the correct order by a series of instructions.'
   version: 1
   outputFolder: build
-  previewImage: {fileID: 0}
+  previewImage: {fileID: 2800000, guid: d162d769e3812254aae481343d32cee5, type: 3}

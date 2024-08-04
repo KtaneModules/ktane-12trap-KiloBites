@@ -278,6 +278,11 @@ Prefab:
       propertyPath: AudioClips.Array.data[7]
       value: 
       objectReference: {fileID: 8300000, guid: 1a6434994b35aee4d9bd656b69913ba1, type: 3}
+    - target: {fileID: 114848120511536268, guid: 8814ea52310d2614a9feda02ec355ae4,
+        type: 2}
+      propertyPath: TwitchPlaysActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 8814ea52310d2614a9feda02ec355ae4, type: 2}
   m_IsPrefabParent: 0
