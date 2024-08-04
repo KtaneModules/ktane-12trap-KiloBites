@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using static UnityEngine.Random;
 using static UnityEngine.Debug;
 
 public class PoisonPenLetter
@@ -20,6 +21,7 @@ public class PoisonPenLetter
 
     private char[] letters;
     private int[] positions = new int[3];
+    private int[] letterIxes;
 
     public string[] GenerateMessage()
     {
@@ -32,11 +34,34 @@ public class PoisonPenLetter
         for (int i = 0; i < 3; i++)
         {
             var filteredLetter = FilterLetters(getLetters, letters[i]);
-            positions[i] = Enumerable.Range(0, filteredLetter.Length).PickRandom();
+            positions[i] = Range(0, filteredLetter.Length);
             messages[i] = $"{RankSystem(positions[i] + 1)} {letters[i]}";
         }
 
+        letterIxes = Enumerable.Range(0, 3).Select(x => GetIndex(getLetters, letters[x], positions[x])).ToArray();
+
+
+        Log(letterIxes.Join());
+
         return messages;
+    }
+
+    private int GetIndex(string data, char toBeFound, int occurance)
+    {
+        var count = 0;
+
+        for (int i = 0; i < data.Length; i++)
+        {
+            if (data[i] == toBeFound)
+            {
+                count++;
+
+                if (count - 1 == occurance)
+                    return i;
+            }
+        }
+
+        return -1;
     }
 
     private string FilterLetters(string letter, char letterToFilter) => letter.Where(x => x == letterToFilter).Join("");
@@ -59,7 +84,7 @@ public class PoisonPenLetter
         if (colors.Any(x => x == '?'))
             throw new Exception($"Invalid letters are found: {colors.Join(", ")}");
 
-        return Enumerable.Range(0, 3).OrderBy(x => positions[x]).Select(x => colors[x]).ToArray();
+        return Enumerable.Range(0, 3).OrderBy(x => letterIxes[x]).Select(x => colors[x]).ToArray();
     }
 
     public void LogPoisonPen(int modId, string[] messages, char[] colors)

@@ -132,7 +132,7 @@ public class MyWorldIsBreaking
                 grid = ".x.x.x.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.x.x.x";
                 break;
             case 4:
-                grid = "x.xxxxxxxxxxxxxxx.xxxxx...xxxxx.xxxxxxxxxxxxxxxxx";
+                grid = "x.xxxxxxxxxxxxxxx.xxxxx...xxxxx.xxxxxxxxxxxxxxx.x";
                 break;
             default:
                 grid = "xxxxxxxxxx.xxxxxxxxxx..x.x..xxxxxxxxxx.xxxxxxxxxx";

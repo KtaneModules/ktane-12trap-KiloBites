@@ -73,7 +73,8 @@ public class BeyondRepairing
 
     private static readonly Color32[] arrowColors = { new Color32(255, 0, 0, 200), new Color32(255, 255, 0, 200), new Color32(0, 255, 0, 200), new Color32(0, 255, 255, 200), new Color32(0, 0, 255, 200), new Color32(255, 0, 255, 200), new Color32(255, 255, 255, 200) };
 
-    public List<Arrow> GeneratedArrows = new List<Arrow>();
+    public List<Arrow> GeneratedArrowPairs = new List<Arrow>();
+    public List<Arrow> GeneratedArrowSequence;
     private List<Arrow[]> arrowPairs = new List<Arrow[]>();
 
     private int currentPos;
@@ -118,11 +119,13 @@ public class BeyondRepairing
                     if (reference[i] == counts[j + (i % 2) - 1])
                         counter++;
 
-                if (counter >= counts.Length)       
+                if (counter >= counts.Length)
                     goto tryagain;
 
             }
         }
+
+        attribs.ForEach(x => x.Shuffle());
 
         return attribs;
     }
@@ -148,17 +151,22 @@ public class BeyondRepairing
                 chosenAttrib = ooo == 2 ? 1 : 2;
         }
 
-        var toBeGrouped = new List<int>();
+        var pairs = new List<int>();
 
         for (int i = 0; i < 5; i++)
-            if (!toBeGrouped.Contains(attribs[chosenAttrib][i]))
-                toBeGrouped.Add(attribs[chosenAttrib][i]);
+            if (!pairs.Contains(attribs[chosenAttrib][i]))
+                pairs.Add(attribs[chosenAttrib][i]);
+
+        var orderedArrows = new List<Arrow>();
+
+        for (int i = 0; i < 6; i++)
+            orderedArrows.Add(new Arrow(attribs[0][i], arrowColors[attribs[1][i]], new[] { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" }[attribs[1][i]], attribs[2][i], Range(0, 6)));
 
         for (int i = 0; i < 3; i++)
         {
             var arrowPair = new Arrow[2];
 
-            var grabIxes = Enumerable.Range(0, 6).Where(x => attribs[chosenAttrib][x] == toBeGrouped[i]).ToArray();
+            var grabIxes = Enumerable.Range(0, 6).Where(x => attribs[chosenAttrib][x] == pairs[i]).ToArray();
 
             for (int j = 0; j < 2; j++)
                 arrowPair[j] = new Arrow(attribs[0][grabIxes[j]], arrowColors[attribs[1][grabIxes[j]]], new[] { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" }[attribs[1][grabIxes[j]]], attribs[2][grabIxes[j]], Range(0, 6));
@@ -167,9 +175,8 @@ public class BeyondRepairing
             arrowPairs.Add(arrowPair);
         }
 
-        arrowPairs.ForEach(GeneratedArrows.AddRange);
-
-        GeneratedArrows.Shuffle();
+        arrowPairs.ForEach(GeneratedArrowPairs.AddRange);
+        GeneratedArrowSequence = orderedArrows.ToList();
     }
 
     public char[] GetColors()
@@ -197,7 +204,7 @@ public class BeyondRepairing
         arrowPairs.Select(x => x.Select(y => $"[Shape: {shapeLetters[y.ArrowType]}, Color: {y.ColorName}, Pattern: {patternNames[y.ArrowPattern]}, Direction: {dirNames[y.Direction]}]").Join()).Join(", ");
 
     public string LogDisplayed() =>
-        GeneratedArrows.Select(x => $"[Shape: {shapeLetters[x.ArrowType]}, Color: {x.ColorName}, Pattern: {patternNames[x.ArrowPattern]}, Direction: {dirNames[x.Direction]}]").Join(", ");
+        GeneratedArrowSequence.Select(x => $"[Shape: {shapeLetters[x.ArrowType]}, Color: {x.ColorName}, Pattern: {patternNames[x.ArrowPattern]}, Direction: {dirNames[x.Direction]}]").Join(", ");
 
     public void LogColors(int modId)
     {

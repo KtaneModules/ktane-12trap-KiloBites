@@ -20,4 +20,4 @@ MonoBehaviour:
     Swap the colored leds to the correct order by a series of instructions.'
   version: 1
   outputFolder: build
-  previewImage: {fileID: 2800000, guid: d162d769e3812254aae481343d32cee5, type: 3}
+  previewImage: {fileID: 0}

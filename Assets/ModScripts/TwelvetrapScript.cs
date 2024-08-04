@@ -549,13 +549,13 @@ public class TwelvetrapScript : MonoBehaviour
 	{
 		var randomTexts = new[] { "THE COUNCIL AWAITS", "UNLOCKED", "WE WILL SAY EVIL", "WE WILL SPEAK EVIL", "WORLD DOMINATION", "YOU ARE SET FREE", "WE WILL BE SILENT" };
 
+		Emblem.enabled = false;
+
 		while (true)
 		{
-			Emblem.enabled = true;
 			SolveText.text = string.Empty;
 			yield return new WaitForSeconds(Range(0.04f, 0.12f));
 			SolveText.text = randomTexts.PickRandom();
-			Emblem.enabled = false;
 			yield return new WaitForSeconds(Range(0.04f, 0.12f));
 		}
 	}
@@ -736,7 +736,7 @@ public class TwelvetrapScript : MonoBehaviour
 
 	IEnumerator CycleArrows()
 	{
-		var getArrows = beyondRepairing.GeneratedArrows;
+		var getArrows = beyondRepairing.GeneratedArrowSequence;
 
         while (true)
 		{

@@ -112,9 +112,9 @@ public class HighLevelSecurity
             colors[ixesToSelect[1]] = currentColor;
 
             modifiedSec = new SecOption
-                (doRandom[0] ? allTypes.Select(x => x[0]).Where(x => !selectedSec.FirstName.Contains(x)).PickRandom() : selectedSec.FirstName,
-                doRandom[1] ? allTypes.Select(x => x[1]).Where(x => !selectedSec.Nationality.Contains(x)).PickRandom() : selectedSec.Nationality,
-                doRandom[2] ? allTypes.Select(x => x[2]).Where(x => !selectedSec.FieldOfStudy.Contains(x)).PickRandom() : selectedSec.FieldOfStudy, selectedSec.Status, colors);
+                (!doRandom[0] ? allTypes.Select(x => x[0]).Where(x => !selectedSec.FirstName.Contains(x)).PickRandom() : selectedSec.FirstName,
+                !doRandom[1] ? allTypes.Select(x => x[1]).Where(x => !selectedSec.Nationality.Contains(x)).PickRandom() : selectedSec.Nationality,
+                !doRandom[2] ? allTypes.Select(x => x[2]).Where(x => !selectedSec.FieldOfStudy.Contains(x)).PickRandom() : selectedSec.FieldOfStudy, selectedSec.Status, colors);
 
             return modifiedSec;
 
