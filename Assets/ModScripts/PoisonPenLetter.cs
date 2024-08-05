@@ -40,9 +40,6 @@ public class PoisonPenLetter
 
         letterIxes = Enumerable.Range(0, 3).Select(x => GetIndex(getLetters, letters[x], positions[x])).ToArray();
 
-
-        Log(letterIxes.Join());
-
         return messages;
     }
 

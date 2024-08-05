@@ -174,6 +174,7 @@ public class TwelvetrapScript : MonoBehaviour
 
 		Log($"[12trap #{moduleId}] The arrows paired are: {beyondRepairing.LogPairs()}");
 		Log($"[12trap #{moduleId}] The arrows are displayed as follows: {beyondRepairing.LogDisplayed()}");
+		beyondRepairing.LogCondition(moduleId, Bomb.GetBatteryCount(), Bomb.GetBatteryHolderCount());
 		beyondRepairing.LogColors(moduleId);
 
 		var beyondRepairingColors = beyondRepairing.GetColors().Select(x => colorChars.IndexOf(x)).ToArray();

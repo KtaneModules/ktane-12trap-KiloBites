@@ -157,10 +157,10 @@ public class BeyondRepairing
             if (!pairs.Contains(attribs[chosenAttrib][i]))
                 pairs.Add(attribs[chosenAttrib][i]);
 
-        var orderedArrows = new List<Arrow>();
+        var randomDirections = Enumerable.Range(0, 6).Select(_ => Range(0, 6)).ToArray();
 
-        for (int i = 0; i < 6; i++)
-            orderedArrows.Add(new Arrow(attribs[0][i], arrowColors[attribs[1][i]], new[] { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" }[attribs[1][i]], attribs[2][i], Range(0, 6)));
+        var orderedArrows = Enumerable.Range(0, 6).
+            Select(x => new Arrow(attribs[0][x], arrowColors[attribs[1][x]], new[] { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" }[attribs[1][x]], attribs[2][x], randomDirections[x])).ToList();
 
         for (int i = 0; i < 3; i++)
         {
@@ -169,7 +169,7 @@ public class BeyondRepairing
             var grabIxes = Enumerable.Range(0, 6).Where(x => attribs[chosenAttrib][x] == pairs[i]).ToArray();
 
             for (int j = 0; j < 2; j++)
-                arrowPair[j] = new Arrow(attribs[0][grabIxes[j]], arrowColors[attribs[1][grabIxes[j]]], new[] { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" }[attribs[1][grabIxes[j]]], attribs[2][grabIxes[j]], Range(0, 6));
+                arrowPair[j] = new Arrow(attribs[0][grabIxes[j]], arrowColors[attribs[1][grabIxes[j]]], new[] { "Red", "Yellow", "Green", "Cyan", "Blue", "Magenta", "White" }[attribs[1][grabIxes[j]]], attribs[2][grabIxes[j]], randomDirections[grabIxes[j]]);
                 
 
             arrowPairs.Add(arrowPair);
@@ -234,5 +234,15 @@ public class BeyondRepairing
         }
 
         Log($"[12trap #{modId}] The final color sequence is: {finalColors.Join("")}");
+    }
+
+    public void LogCondition(int modId, int bat, int holder)
+    {
+        if (bat == holder)
+            Log($"[12trap #{modId}] Since the batteries are equal to the number of battery holders, prioritize color over shape, and shape over patterns");
+        else if (bat > holder)
+            Log($"[12trap #{modId}] Since the batteries are greater than battery holders, prioritize shape over pattern, and pattern over color");
+        else if (bat < holder) // Let's be honest, nobody is gonna get that
+            Log($"[12trap #{modId}] Since the batteries are less than battery holders (how), prioritize patterns over color, and color over shape");
     }
 }

@@ -93,14 +93,20 @@ public class HighLevelSecurity
 
     public SecOption SelectSec()
     {
+        beIncorrect = Range(0, 2) == 0;
+
+    tryagain:
+
         selectedSec = allSecTypes.PickRandom();
 
-        beIncorrect = Range(0, 2) == 0;
+        
 
         var colors = selectedSec.Colors.ToArray();
 
         if (beIncorrect)
         {
+            
+
             ixesToSelect = Enumerable.Range(0, 3).ToList().Shuffle().Take(2).OrderBy(x => x).ToArray();
 
             var doRandom = Enumerable.Range(0, 3).Select(ixesToSelect.Contains).ToArray();
@@ -115,6 +121,9 @@ public class HighLevelSecurity
                 (!doRandom[0] ? allTypes.Select(x => x[0]).Where(x => !selectedSec.FirstName.Contains(x)).PickRandom() : selectedSec.FirstName,
                 !doRandom[1] ? allTypes.Select(x => x[1]).Where(x => !selectedSec.Nationality.Contains(x)).PickRandom() : selectedSec.Nationality,
                 !doRandom[2] ? allTypes.Select(x => x[2]).Where(x => !selectedSec.FieldOfStudy.Contains(x)).PickRandom() : selectedSec.FieldOfStudy, selectedSec.Status, colors);
+
+            if ((!doRandom[1] && modifiedSec.Nationality == selectedSec.Nationality) || (!doRandom[2] && modifiedSec.FieldOfStudy == selectedSec.FieldOfStudy))
+                goto tryagain;
 
             return modifiedSec;
 
