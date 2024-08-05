@@ -17,7 +17,7 @@ MonoBehaviour:
   description: 'The Council of the Sparking Diamond... One fear. Twelve trap.
 
 
-    Swap the colored leds to the correct order by a series of instructions.'
+    Swap the colored LEDs to the correct order by a series of instructions.'
   version: 1
   outputFolder: build
-  previewImage: {fileID: 0}
+  previewImage: {fileID: 2800000, guid: d3633ba19ad45bf44adf9045cf352969, type: 3}
