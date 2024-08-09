@@ -125,6 +125,12 @@ public class HighLevelSecurity
             if ((!doRandom[1] && modifiedSec.Nationality == selectedSec.Nationality) || (!doRandom[2] && modifiedSec.FieldOfStudy == selectedSec.FieldOfStudy))
                 goto tryagain;
 
+            if (allSecTypes.Count(x => x.Nationality == modifiedSec.Nationality && x.FieldOfStudy == modifiedSec.FieldOfStudy) + 
+                allSecTypes.Count(x => x.FirstName == modifiedSec.FirstName && x.FieldOfStudy == modifiedSec.FieldOfStudy) + 
+                allSecTypes.Count(x => x.FirstName == modifiedSec.FirstName && x.Nationality == modifiedSec.Nationality) != 1)
+                goto tryagain;
+                
+
             return modifiedSec;
 
         }
