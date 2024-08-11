@@ -898,11 +898,12 @@ public class TwelvetrapScript : MonoBehaviour
 				yield break;
 			}
 
-			if (!Enumerable.Range(0, 3).Contains(int.Parse(split[2]) - 1))
-			{
-				yield return $"sendtochaterror {split[2]} isn't valid!";
-				yield break;
-			}
+			if (split.Length == 3)
+				if (!Enumerable.Range(0, 3).Contains(int.Parse(split[2]) - 1))
+				{
+					yield return $"sendtochaterror {split[2]} isn't valid!";
+					yield break;
+				}
 
 			if (colorSwapIxes.Count == 1)
 			{

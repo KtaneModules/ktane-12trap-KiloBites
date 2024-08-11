@@ -36,7 +36,6 @@ public class MyWorldIsBreaking
 
     private List<int> selectedCoords = new List<int>();
 
-    public override string ToString() => grid.Select(x => x ? 'X' : '-').Join("");
 
     public List<Bomb> GeneratedBombs = new List<Bomb>();
     public char[] Colors;
