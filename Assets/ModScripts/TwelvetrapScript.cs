@@ -1003,7 +1003,7 @@ public class TwelvetrapScript : MonoBehaviour
 
 		if ("SWAP".ContainsIgnoreCase(split[0]))
 		{
-			if (split.Length == 1 || split.Length > 3)
+			if (split.Length == 1 || split.Length == 2 || split.Length > 3)
 				yield break;
 
 			if (!Enumerable.Range(0, 12).Contains(int.Parse(split[1]) - 1) || !Enumerable.Range(0, 12).Contains(int.Parse(split[2]) - 1))
